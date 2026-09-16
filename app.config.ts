@@ -28,6 +28,7 @@ function fromEnv(name: string): string | undefined {
 const config: ExpoConfig = {
   name: 'Canji',
   slug: 'canji',
+  owner: 'aiiman-tech',
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
@@ -78,10 +79,10 @@ const config: ExpoConfig = {
     supabaseUrl: fromEnv('EXPO_PUBLIC_SUPABASE_URL'),
     supabaseAnonKey: fromEnv('EXPO_PUBLIC_SUPABASE_ANON_KEY'),
 
-    // Set by `eas init`. A dynamic config cannot be written to by the EAS
-    // CLI, so this is filled in by hand. It is an identifier, not a secret.
+    // Created by `eas init`. A dynamic config cannot be written to by the
+    // EAS CLI, so this is set by hand. It is an identifier, not a secret.
     eas: {
-      projectId: process.env.EAS_PROJECT_ID,
+      projectId: '7673f32c-e920-4ad2-8698-c04bb41acaf2',
     },
   },
 };
