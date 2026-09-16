@@ -1,19 +1,25 @@
 import type { ExpoConfig } from 'expo/config';
 
 /**
- * Environment is read here rather than inline at the call site so that a
- * missing value fails at startup with a named error, instead of surfacing
- * later as an opaque network failure.
+ * Environment is surfaced here so the app reads it from one place.
+ *
+ * This deliberately warns rather than throws. EAS and Expo tooling evaluate
+ * this config in contexts where the variables legitimately do not exist yet
+ * — `eas env:create` being the obvious one, which cannot run if the config
+ * it must read refuses to load without the values it is about to set.
+ *
+ * The hard failure lives at runtime in src/lib/env.ts instead, where a
+ * missing value is unambiguously a real problem.
  *
  * Only client-safe values belong here. The Supabase service role key is set
  * in the Edge Function environment through the dashboard and must never
  * appear in this file, in .env, or anywhere in the repository.
  */
-function required(name: string): string {
+function fromEnv(name: string): string | undefined {
   const value = process.env[name];
   if (!value) {
-    throw new Error(
-      `Missing required environment variable ${name}. Copy .env.example to .env and fill it in.`
+    console.warn(
+      `[canji] ${name} is not set. Fine for tooling; the app will refuse to start without it.`
     );
   }
   return value;
@@ -69,8 +75,14 @@ const config: ExpoConfig = {
   },
 
   extra: {
-    supabaseUrl: required('EXPO_PUBLIC_SUPABASE_URL'),
-    supabaseAnonKey: required('EXPO_PUBLIC_SUPABASE_ANON_KEY'),
+    supabaseUrl: fromEnv('EXPO_PUBLIC_SUPABASE_URL'),
+    supabaseAnonKey: fromEnv('EXPO_PUBLIC_SUPABASE_ANON_KEY'),
+
+    // Set by `eas init`. A dynamic config cannot be written to by the EAS
+    // CLI, so this is filled in by hand. It is an identifier, not a secret.
+    eas: {
+      projectId: process.env.EAS_PROJECT_ID,
+    },
   },
 };
 
