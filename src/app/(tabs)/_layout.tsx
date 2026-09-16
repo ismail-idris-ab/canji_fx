@@ -43,6 +43,13 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <TabGlyph color={color}>⇄</TabGlyph>,
         }}
       />
+      <Tabs.Screen
+        name="alerts"
+        options={{
+          title: 'Alerts',
+          tabBarIcon: ({ color }) => <TabGlyph color={color}>◔</TabGlyph>,
+        }}
+      />
     </Tabs>
   );
 }

@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { configureNotificationHandling } from '@/lib/push';
 import { ensureAnonymousSession } from '@/lib/session';
 
 export default function RootLayout() {
@@ -12,6 +13,7 @@ export default function RootLayout() {
     // never gate the first paint — it only prepares the identity that Rate
     // Alerts will be owned by. See ADR 0002.
     void ensureAnonymousSession();
+    configureNotificationHandling();
   }, []);
 
   return (
