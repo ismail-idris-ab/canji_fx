@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -67,13 +68,25 @@ export default function RatesScreen() {
           />
         }
       >
-        <View className="gap-1">
-          <Text className="text-3xl font-bold tracking-tight text-ink">
-            Canji
-          </Text>
-          <Text className="text-sm text-muted">
-            Naira exchange rates, with their age
-          </Text>
+        <View className="flex-row items-start justify-between">
+          <View className="gap-1">
+            <Text className="text-3xl font-bold tracking-tight text-ink">
+              Canji
+            </Text>
+            <Text className="text-sm text-muted">
+              Naira exchange rates, with their age
+            </Text>
+          </View>
+
+          <Link href="/about" asChild>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="About Canji"
+              className="rounded-full border border-line bg-surface px-3 py-1.5 active:opacity-70"
+            >
+              <Text className="text-xs font-semibold text-muted">About</Text>
+            </Pressable>
+          </Link>
         </View>
 
         <MarketToggle value={market} onChange={setMarket} />

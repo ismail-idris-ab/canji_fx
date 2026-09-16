@@ -1,3 +1,5 @@
+import type { Conversion, Direction } from './conversion';
+import { convert } from './conversion';
 import { classifyFreshness } from './freshness';
 import type { Freshness, Market, Rate } from './types';
 
@@ -20,6 +22,17 @@ export type RateBook = {
   latest: (currencyCode: string, market: Market) => Rate | null;
   /** Freshness of the live Rate for a pair, or null if there is none. */
   freshness: (currencyCode: string, market: Market) => Freshness | null;
+  /**
+   * Converts against the live Rate, applying the side of the Spread that
+   * the direction implies. Null when no Rate exists or the amount is not
+   * convertible.
+   */
+  convert: (
+    currencyCode: string,
+    market: Market,
+    amount: number,
+    direction: Direction
+  ) => Conversion | null;
   /** Every Quoted Currency with at least one Rate, in no particular order. */
   currencies: () => string[];
 };
@@ -51,6 +64,11 @@ export function createRateBook(rates: readonly Rate[], now: Date): RateBook {
     freshness(currencyCode, market) {
       const rate = live.get(key(currencyCode, market));
       return rate ? classifyFreshness(rate, now) : null;
+    },
+
+    convert(currencyCode, market, amount, direction) {
+      const rate = live.get(key(currencyCode, market));
+      return rate ? convert(rate, amount, direction) : null;
     },
 
     currencies() {
