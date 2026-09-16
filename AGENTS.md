@@ -34,3 +34,14 @@ set through the dashboard. It must never appear in `.env` or the repository.
 Only `src/domain/**` is unit tested. Those modules are pure: no Supabase
 client, no React, no network, and no clock reads — the current instant is
 always passed in. A test that needs a Supabase mock is at the wrong seam.
+
+## Decisions
+
+`docs/adr/` records why the non-obvious choices were made. Read the relevant
+one before changing behaviour it covers — each exists because a reasonable
+reader would otherwise assume the opposite:
+
+- `0001` Rates are append-only and never retracted
+- `0002` Readers are anonymous authenticated users, not device identifiers
+- `0003` Markets are named as markets, not after their publisher
+- `0004` Official Rates come from an undocumented CBN JSON endpoint
