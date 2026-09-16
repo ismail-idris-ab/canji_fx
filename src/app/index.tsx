@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   View,
@@ -52,7 +53,20 @@ export default function RatesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-ground">
-      <ScrollView contentContainerClassName="px-5 py-6 gap-5">
+      <ScrollView
+        contentContainerClassName="px-5 py-6 gap-5"
+        refreshControl={
+          <RefreshControl
+            refreshing={state.status === 'ready' && state.refreshing}
+            onRefresh={() => {
+              if (state.status !== 'loading') state.retry();
+            }}
+            tintColor="#F5B301"
+            colors={['#F5B301']}
+            progressBackgroundColor="#15151C"
+          />
+        }
+      >
         <View className="gap-1">
           <Text className="text-3xl font-bold tracking-tight text-ink">
             Canji

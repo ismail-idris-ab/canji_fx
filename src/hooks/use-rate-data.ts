@@ -1,17 +1,23 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import type { Currency, Rate } from '@/domain/types';
 import { readCache, writeCache } from '@/lib/cache';
 import { supabase } from '@/lib/supabase';
 
 /**
- * Loads Rates and Quoted Currencies, showing the cached payload immediately
- * and replacing it once the network answers.
+ * Loads Rates and Quoted Currencies, shows the cached payload immediately,
+ * replaces it once the network answers, and keeps it current.
+ *
+ * Live updates subscribe to inserts on the `rates` base table, not to
+ * `latest_rates`. A Postgres publication cannot contain a view, so the view
+ * can never emit events. On each insert the view is refetched rather than
+ * the in-memory list being patched from the payload: patching would
+ * reimplement the newest-per-pair rule in a second place, and a divergence
+ * between the two shows up as a wrong number on screen.
  *
  * `origin` is surfaced rather than hidden. A Reader looking at cached data
- * during a failed refresh is entitled to know that is what they are seeing —
- * the Freshness badge already tells them how old the Rate is, and this tells
- * them Canji has not managed to check for a newer one.
+ * during a failed refresh is entitled to know that is what they are seeing.
  */
 
 export type RateData = {
@@ -28,6 +34,8 @@ export type RateDataState =
       origin: 'cache' | 'network';
       /** Set when cached data is shown because a refresh failed. */
       refreshError: string | null;
+      /** True while a refresh runs behind data already on screen. */
+      refreshing: boolean;
       retry: () => void;
     };
 
@@ -83,65 +91,108 @@ async function fetchFromNetwork(): Promise<RateData> {
 export function useRateData(): RateDataState {
   const [state, setState] = useState<RateDataState>({ status: 'loading' });
 
-  const refresh = useCallback(async (cached: RateData | null) => {
+  // The last good payload, so a failed refresh can fall back to it without
+  // the refresh function depending on render state.
+  const lastGood = useRef<RateData | null>(null);
+
+  const refresh = useCallback(async ({ silent }: { silent: boolean }) => {
+    if (silent && lastGood.current) {
+      setState((current) =>
+        current.status === 'ready' ? { ...current, refreshing: true } : current
+      );
+    }
+
     try {
       const data = await fetchFromNetwork();
+      lastGood.current = data;
       void writeCache(data);
+
       setState({
         status: 'ready',
         data,
         origin: 'network',
         refreshError: null,
-        retry: () => void refresh(data),
+        refreshing: false,
+        retry: () => void refresh({ silent: true }),
       });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Network request failed';
 
-      // With a cache, a failed refresh is a caveat on real data. Without one,
-      // there is nothing to show and it is simply an error.
-      if (cached) {
+      // With data in hand, a failed refresh is a caveat on real rates.
+      // Without any, there is nothing to show and it is simply an error.
+      if (lastGood.current) {
         setState({
           status: 'ready',
-          data: cached,
+          data: lastGood.current,
           origin: 'cache',
           refreshError: message,
-          retry: () => void refresh(cached),
+          refreshing: false,
+          retry: () => void refresh({ silent: true }),
         });
       } else {
         setState({
           status: 'error',
           message,
-          retry: () => void refresh(null),
+          retry: () => void refresh({ silent: false }),
         });
       }
     }
   }, []);
 
+  // Initial load: paint the cache, then correct it from the network.
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       const cached = await readCache();
 
-      // Paint cached data first so the app opens with rates rather than a
-      // spinner, then let the network correct it.
       if (cached && !cancelled) {
+        lastGood.current = cached;
         setState({
           status: 'ready',
           data: cached,
           origin: 'cache',
           refreshError: null,
-          retry: () => void refresh(cached),
+          refreshing: true,
+          retry: () => void refresh({ silent: true }),
         });
       }
 
-      if (!cancelled) await refresh(cached);
+      if (!cancelled) await refresh({ silent: Boolean(cached) });
     })();
 
     return () => {
       cancelled = true;
     };
+  }, [refresh]);
+
+  // Live updates. An insert on `rates` means a new observation exists, so
+  // refetch the view; the payload itself is deliberately not trusted to
+  // decide which Rate is now live.
+  useEffect(() => {
+    const channel = supabase
+      .channel('rates-inserts')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'rates' },
+        () => void refresh({ silent: true })
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [refresh]);
+
+  // A backgrounded app misses realtime events, so returning to it refetches
+  // rather than trusting whatever was last on screen.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next) => {
+      if (next === 'active') void refresh({ silent: true });
+    });
+
+    return () => subscription.remove();
   }, [refresh]);
 
   return state;
