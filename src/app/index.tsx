@@ -1,30 +1,67 @@
-import { useMemo } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CurrencyRow } from '@/components/currency-row';
+import { MarketToggle } from '@/components/market-toggle';
 import { RateCard } from '@/components/rate-card';
 import { createRateBook } from '@/domain/rate-book';
+import type { Market } from '@/domain/types';
+import { useCurrencies } from '@/hooks/use-currencies';
 import { useRates } from '@/hooks/use-rates';
 
 /**
  * Rates screen.
  *
- * This slice covers USD only, and deliberately shows both paths: a real
- * Official Market Rate, and the Parallel Market's empty state, which is
- * genuinely empty because a Parallel Rate is an Admin's observation of the
- * street and none has been recorded yet.
+ * The first Quoted Currency that has a Rate in the selected Market is
+ * featured as a full card, because the US dollar is what most Readers open
+ * the app for. The rest are compact rows.
  */
 export default function RatesScreen() {
-  const state = useRates();
+  const [market, setMarket] = useState<Market>('official');
 
-  // One instant for the whole render, so two cards can never disagree about
-  // what time it is.
+  const ratesState = useRates();
+  const currenciesState = useCurrencies();
+
+  // One instant for the whole render, so no two rows can disagree about what
+  // time it is.
   const now = useMemo(() => new Date(), []);
 
   const book = useMemo(
-    () => createRateBook(state.status === 'ready' ? state.rates : [], now),
-    [state, now]
+    () =>
+      createRateBook(ratesState.status === 'ready' ? ratesState.rates : [], now),
+    [ratesState, now]
   );
+
+  const loading =
+    ratesState.status === 'loading' || currenciesState.status === 'loading';
+
+  const error =
+    ratesState.status === 'error'
+      ? ratesState
+      : currenciesState.status === 'error'
+        ? currenciesState
+        : null;
+
+  const currencies =
+    currenciesState.status === 'ready' ? currenciesState.currencies : [];
+
+  const featuredCode = currencies.find(
+    (c) => book.latest(c.code, market) !== null
+  )?.code;
+
+  const featuredRate = featuredCode ? book.latest(featuredCode, market) : null;
+  const featuredFreshness = featuredCode
+    ? book.freshness(featuredCode, market)
+    : null;
+
+  const rest = currencies.filter((c) => c.code !== featuredCode);
 
   return (
     <SafeAreaView className="flex-1 bg-ground">
@@ -33,32 +70,43 @@ export default function RatesScreen() {
           <Text className="text-3xl font-bold tracking-tight text-ink">
             Canji
           </Text>
-          <Text className="text-sm text-muted">US Dollar · Naira</Text>
+          <Text className="text-sm text-muted">
+            Naira exchange rates, with their age
+          </Text>
         </View>
 
-        {state.status === 'loading' && <Loading />}
+        <MarketToggle value={market} onChange={setMarket} />
 
-        {state.status === 'error' && (
-          <ErrorState message={state.message} onRetry={state.retry} />
-        )}
+        {loading && <Loading />}
 
-        {state.status === 'ready' && (
+        {error && <ErrorState message={error.message} onRetry={error.retry} />}
+
+        {!loading && !error && (
           <>
-            <MarketSection
-              title="Official market"
-              rate={book.latest('USD', 'official')}
-              freshness={book.freshness('USD', 'official')}
-              now={now}
-              emptyMessage="No official rate has been recorded yet."
-            />
+            {featuredRate && featuredFreshness && featuredCode ? (
+              <RateCard
+                rate={featuredRate}
+                freshness={featuredFreshness}
+                now={now}
+                title={`${featuredCode} · ${
+                  market === 'parallel' ? 'Parallel market' : 'Official market'
+                }`}
+              />
+            ) : (
+              <EmptyMarket market={market} />
+            )}
 
-            <MarketSection
-              title="Parallel market"
-              rate={book.latest('USD', 'parallel')}
-              freshness={book.freshness('USD', 'parallel')}
-              now={now}
-              emptyMessage="No parallel rate recorded yet. Parallel rates come from market observation and are entered by hand."
-            />
+            <View className="rounded-2xl border border-line bg-surface px-4 py-1">
+              {rest.map((currency) => (
+                <CurrencyRow
+                  key={currency.code}
+                  currency={currency}
+                  market={market}
+                  rate={book.latest(currency.code, market)}
+                  freshness={book.freshness(currency.code, market)}
+                />
+              ))}
+            </View>
           </>
         )}
 
@@ -71,31 +119,19 @@ export default function RatesScreen() {
   );
 }
 
-function MarketSection({
-  title,
-  rate,
-  freshness,
-  now,
-  emptyMessage,
-}: {
-  title: string;
-  rate: ReturnType<ReturnType<typeof createRateBook>['latest']>;
-  freshness: ReturnType<ReturnType<typeof createRateBook>['freshness']>;
-  now: Date;
-  emptyMessage: string;
-}) {
-  if (!rate || !freshness) {
-    return (
-      <View className="gap-2 rounded-2xl border border-line bg-surface p-5">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-faint">
-          {title}
-        </Text>
-        <Text className="text-sm leading-5 text-muted">{emptyMessage}</Text>
-      </View>
-    );
-  }
-
-  return <RateCard rate={rate} freshness={freshness} now={now} title={title} />;
+function EmptyMarket({ market }: { market: Market }) {
+  return (
+    <View className="gap-2 rounded-2xl border border-line bg-surface p-5">
+      <Text className="text-xs font-semibold uppercase tracking-widest text-faint">
+        {market === 'parallel' ? 'Parallel market' : 'Official market'}
+      </Text>
+      <Text className="text-sm leading-5 text-muted">
+        {market === 'parallel'
+          ? 'No parallel rates recorded yet. Parallel rates come from market observation and are entered by hand.'
+          : 'No official rates recorded yet.'}
+      </Text>
+    </View>
+  );
 }
 
 function Loading() {
