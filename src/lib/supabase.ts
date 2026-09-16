@@ -3,6 +3,8 @@ import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
+import type { Database } from '@/types/database';
+
 import { env } from './env';
 
 /**
@@ -15,18 +17,22 @@ import { env } from './env';
  * detectSessionInUrl is off because that behaviour is for browser redirect
  * flows and has no meaning in a native app.
  *
- * This client is intentionally untyped at this stage: the generated Database
- * type does not exist until the first migration lands. It gains its generic
- * in the slice that introduces the schema.
+ * Typed against the generated Database, so a column rename in a migration
+ * becomes a compile error rather than an undefined at runtime. Regenerate
+ * with `npm run db:types` after every migration.
  */
-export const supabase = createClient(env.supabaseUrl, env.supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+export const supabase = createClient<Database>(
+  env.supabaseUrl,
+  env.supabaseAnonKey,
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  }
+);
 
 /**
  * Confirms the configured project URL and anon key are both valid.

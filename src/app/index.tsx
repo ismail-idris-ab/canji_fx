@@ -1,158 +1,131 @@
-import { useEffect, useState } from 'react';
-import { Platform, ScrollView, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { checkSupabaseReachable } from '@/lib/supabase';
-
-type CheckState =
-  | { status: 'checking' }
-  | { status: 'pass'; detail: string }
-  | { status: 'fail'; detail: string };
+import { RateCard } from '@/components/rate-card';
+import { createRateBook } from '@/domain/rate-book';
+import { useRates } from '@/hooks/use-rates';
 
 /**
- * Scaffold smoke screen.
+ * Rates screen.
  *
- * This exists to answer three questions before any product UI is written:
- * does NativeWind actually style components under the New Architecture, is
- * the New Architecture in fact enabled, and do the configured Supabase URL
- * and anon key work. It is replaced by the Rates screen in the next slice.
+ * This slice covers USD only, and deliberately shows both paths: a real
+ * Official Market Rate, and the Parallel Market's empty state, which is
+ * genuinely empty because a Parallel Rate is an Admin's observation of the
+ * street and none has been recorded yet.
  */
-export default function SmokeScreen() {
-  const [supabaseCheck, setSupabaseCheck] = useState<CheckState>({
-    status: 'checking',
-  });
-  const [anonCheck, setAnonCheck] = useState<CheckState>({
-    status: 'checking',
-  });
+export default function RatesScreen() {
+  const state = useRates();
 
-  useEffect(() => {
-    let cancelled = false;
+  // One instant for the whole render, so two cards can never disagree about
+  // what time it is.
+  const now = useMemo(() => new Date(), []);
 
-    checkSupabaseReachable().then((result) => {
-      if (cancelled) return;
-
-      if (!result.ok) {
-        setSupabaseCheck({ status: 'fail', detail: result.reason });
-        setAnonCheck({ status: 'fail', detail: 'Could not reach the project' });
-        return;
-      }
-
-      setSupabaseCheck({ status: 'pass', detail: 'Auth settings readable' });
-      setAnonCheck(
-        result.anonymousSignInsEnabled
-          ? { status: 'pass', detail: 'Enabled' }
-          : {
-              status: 'fail',
-              detail:
-                'Disabled — enable it under Authentication → Sign In / Providers',
-            }
-      );
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // react-native-worklets is only installed under the New Architecture in
-  // this configuration, and global.nativeFabricUIManager is the runtime
-  // marker Fabric sets. Reading it is the only honest way to confirm.
-  const fabricEnabled =
-    typeof (globalThis as Record<string, unknown>).nativeFabricUIManager !==
-    'undefined';
+  const book = useMemo(
+    () => createRateBook(state.status === 'ready' ? state.rates : [], now),
+    [state, now]
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-ground">
-      <ScrollView contentContainerClassName="px-5 py-8 gap-6">
+      <ScrollView contentContainerClassName="px-5 py-6 gap-5">
         <View className="gap-1">
           <Text className="text-3xl font-bold tracking-tight text-ink">
             Canji
           </Text>
-          <Text className="text-sm text-muted">Scaffold smoke test</Text>
+          <Text className="text-sm text-muted">US Dollar · Naira</Text>
         </View>
 
-        <View className="gap-3 rounded-2xl border border-line bg-surface p-5">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-faint">
-            NativeWind
-          </Text>
-          <Text className="text-base text-ink">
-            This card is styled entirely with utility classes. Borders,
-            spacing, radius and the palette below all come from
-            tailwind.config.js.
-          </Text>
+        {state.status === 'loading' && <Loading />}
 
-          <View className="mt-2 flex-row flex-wrap gap-2">
-            <Swatch label="accent" className="bg-accent" />
-            <Swatch label="fresh" className="bg-fresh" />
-            <Swatch label="aging" className="bg-aging" />
-            <Swatch label="stale" className="bg-stale" />
-          </View>
-        </View>
+        {state.status === 'error' && (
+          <ErrorState message={state.message} onRetry={state.retry} />
+        )}
 
-        <CheckRow
-          label="New Architecture (Fabric)"
-          state={
-            fabricEnabled
-              ? { status: 'pass', detail: 'nativeFabricUIManager present' }
-              : {
-                  status: 'fail',
-                  detail:
-                    'Fabric marker absent — running on the old architecture',
-                }
-          }
-        />
+        {state.status === 'ready' && (
+          <>
+            <MarketSection
+              title="Official market"
+              rate={book.latest('USD', 'official')}
+              freshness={book.freshness('USD', 'official')}
+              now={now}
+              emptyMessage="No official rate has been recorded yet."
+            />
 
-        <CheckRow label="Supabase configuration" state={supabaseCheck} />
-
-        <CheckRow label="Anonymous sign-ins" state={anonCheck} />
-
-        <CheckRow
-          label="Platform"
-          state={{
-            status: 'pass',
-            detail: `${Platform.OS} ${String(Platform.Version)}`,
-          }}
-        />
+            <MarketSection
+              title="Parallel market"
+              rate={book.latest('USD', 'parallel')}
+              freshness={book.freshness('USD', 'parallel')}
+              now={now}
+              emptyMessage="No parallel rate recorded yet. Parallel rates come from market observation and are entered by hand."
+            />
+          </>
+        )}
 
         <Text className="text-xs leading-5 text-faint">
-          Rates shown in Canji are indicative, sourced from market observation,
-          and for information only. This screen shows no rates — it is a build
-          check.
+          Rates are indicative, sourced from market observation, and for
+          information only. Canji does not set, offer, or guarantee any rate.
         </Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function Swatch({ label, className }: { label: string; className: string }) {
+function MarketSection({
+  title,
+  rate,
+  freshness,
+  now,
+  emptyMessage,
+}: {
+  title: string;
+  rate: ReturnType<ReturnType<typeof createRateBook>['latest']>;
+  freshness: ReturnType<ReturnType<typeof createRateBook>['freshness']>;
+  now: Date;
+  emptyMessage: string;
+}) {
+  if (!rate || !freshness) {
+    return (
+      <View className="gap-2 rounded-2xl border border-line bg-surface p-5">
+        <Text className="text-xs font-semibold uppercase tracking-widest text-faint">
+          {title}
+        </Text>
+        <Text className="text-sm leading-5 text-muted">{emptyMessage}</Text>
+      </View>
+    );
+  }
+
+  return <RateCard rate={rate} freshness={freshness} now={now} title={title} />;
+}
+
+function Loading() {
   return (
-    <View className="items-center gap-1">
-      <View className={`h-10 w-16 rounded-lg ${className}`} />
-      <Text className="text-[10px] text-faint">{label}</Text>
+    <View className="items-center gap-3 rounded-2xl border border-line bg-surface p-8">
+      <ActivityIndicator color="#F5B301" />
+      <Text className="text-sm text-muted">Fetching rates…</Text>
     </View>
   );
 }
 
-function CheckRow({ label, state }: { label: string; state: CheckState }) {
-  const tone =
-    state.status === 'pass'
-      ? 'text-fresh'
-      : state.status === 'fail'
-        ? 'text-stale'
-        : 'text-muted';
-
-  const mark =
-    state.status === 'pass' ? '✓' : state.status === 'fail' ? '✕' : '…';
-
+function ErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
   return (
-    <View className="flex-row items-start gap-3 rounded-2xl border border-line bg-surface p-4">
-      <Text className={`text-lg leading-6 ${tone}`}>{mark}</Text>
-      <View className="flex-1 gap-1">
-        <Text className="text-base text-ink">{label}</Text>
-        <Text className="text-xs text-muted">
-          {state.status === 'checking' ? 'Checking…' : state.detail}
-        </Text>
-      </View>
+    <View className="gap-3 rounded-2xl border border-stale/40 bg-surface p-5">
+      <Text className="text-sm font-semibold text-stale">
+        Could not load rates
+      </Text>
+      <Text className="text-xs leading-5 text-muted">{message}</Text>
+      <Pressable
+        onPress={onRetry}
+        className="self-start rounded-lg bg-raised px-4 py-2 active:opacity-70"
+      >
+        <Text className="text-sm font-semibold text-accent">Try again</Text>
+      </Pressable>
     </View>
   );
 }
