@@ -1,7 +1,6 @@
 import { Text, View } from 'react-native';
 
-import type { Freshness, Market, Rate } from '@/domain/types';
-import type { Currency } from '@/hooks/use-currencies';
+import type { Currency, Freshness, Market, Rate } from '@/domain/types';
 import { formatNaira } from '@/lib/format';
 
 const DOT: Record<Freshness, string> = {

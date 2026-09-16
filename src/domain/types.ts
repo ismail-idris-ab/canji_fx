@@ -5,6 +5,21 @@
 
 export type Market = 'parallel' | 'official';
 
+/**
+ * A currency Canji reports against the Naira, with its display configuration.
+ *
+ * `hasOfficial` is false for a currency traded on the Nigerian street that
+ * the CBN does not publish — CAD today. That absence is permanent and must
+ * be presented differently from a Rate that simply has not been observed yet.
+ */
+export type Currency = {
+  code: string;
+  name: string;
+  flagEmoji: string;
+  trackedParallel: boolean;
+  hasOfficial: boolean;
+};
+
 export type RateSource =
   | 'Parallel market survey'
   | 'Central Bank of Nigeria'

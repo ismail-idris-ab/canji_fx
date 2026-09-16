@@ -13,44 +13,31 @@ import { MarketToggle } from '@/components/market-toggle';
 import { RateCard } from '@/components/rate-card';
 import { createRateBook } from '@/domain/rate-book';
 import type { Market } from '@/domain/types';
-import { useCurrencies } from '@/hooks/use-currencies';
-import { useRates } from '@/hooks/use-rates';
+import { useRateData } from '@/hooks/use-rate-data';
 
 /**
  * Rates screen.
  *
- * The first Quoted Currency that has a Rate in the selected Market is
- * featured as a full card, because the US dollar is what most Readers open
- * the app for. The rest are compact rows.
+ * The first Quoted Currency holding a Rate in the selected Market is featured
+ * as a full card, because the US dollar is what most Readers open the app
+ * for. The rest are compact rows.
  */
 export default function RatesScreen() {
   const [market, setMarket] = useState<Market>('official');
-
-  const ratesState = useRates();
-  const currenciesState = useCurrencies();
+  const state = useRateData();
 
   // One instant for the whole render, so no two rows can disagree about what
   // time it is.
   const now = useMemo(() => new Date(), []);
 
+  const data = state.status === 'ready' ? state.data : null;
+
   const book = useMemo(
-    () =>
-      createRateBook(ratesState.status === 'ready' ? ratesState.rates : [], now),
-    [ratesState, now]
+    () => createRateBook(data?.rates ?? [], now),
+    [data, now]
   );
 
-  const loading =
-    ratesState.status === 'loading' || currenciesState.status === 'loading';
-
-  const error =
-    ratesState.status === 'error'
-      ? ratesState
-      : currenciesState.status === 'error'
-        ? currenciesState
-        : null;
-
-  const currencies =
-    currenciesState.status === 'ready' ? currenciesState.currencies : [];
+  const currencies = data?.currencies ?? [];
 
   const featuredCode = currencies.find(
     (c) => book.latest(c.code, market) !== null
@@ -77,12 +64,16 @@ export default function RatesScreen() {
 
         <MarketToggle value={market} onChange={setMarket} />
 
-        {loading && <Loading />}
+        {state.status === 'loading' && <Loading />}
 
-        {error && <ErrorState message={error.message} onRetry={error.retry} />}
+        {state.status === 'error' && (
+          <ErrorState message={state.message} onRetry={state.retry} />
+        )}
 
-        {!loading && !error && (
+        {state.status === 'ready' && (
           <>
+            {state.refreshError && <OfflineNotice onRetry={state.retry} />}
+
             {featuredRate && featuredFreshness && featuredCode ? (
               <RateCard
                 rate={featuredRate}
@@ -116,6 +107,26 @@ export default function RatesScreen() {
         </Text>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/**
+ * Shown when cached Rates are on screen because a refresh failed. The
+ * Freshness badge already says how old each Rate is; this says why Canji has
+ * not managed to look for a newer one.
+ */
+function OfflineNotice({ onRetry }: { onRetry: () => void }) {
+  return (
+    <View className="flex-row items-center gap-3 rounded-xl border border-aging/30 bg-surface px-4 py-3">
+      <View className="h-2 w-2 rounded-full bg-aging" />
+      <Text className="flex-1 text-xs leading-4 text-muted">
+        Showing saved rates. Canji could not reach the network to check for
+        newer ones.
+      </Text>
+      <Pressable onPress={onRetry} className="active:opacity-70">
+        <Text className="text-xs font-semibold text-accent">Retry</Text>
+      </Pressable>
+    </View>
   );
 }
 
