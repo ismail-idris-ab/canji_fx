@@ -56,3 +56,16 @@ changing it, run `npm run sync:functions` before deploying.
 
 Deploy with `npx supabase functions deploy <name> --use-api` — the `--use-api`
 flag avoids needing Docker.
+
+## Scheduled jobs
+
+| Job | Schedule (UTC) | Function |
+|---|---|---|
+| `fetch-cbn-rates` | 05:00, 11:00, 17:00 Mon–Fri | Official Market Rates |
+| `check-alerts` | every 15 min | Fires Rate Alerts on a Crossing |
+| `check-push-receipts` | :07 :22 :37 :52 | Retires dead push tokens |
+| `purge-anonymous-users` | Sun 02:00 | Removes abandoned Readers |
+
+All are safe to invoke repeatedly. Cron calls carry only the publishable anon
+key; each function reads the service role key from its own environment, so no
+secret appears in `cron.job`.
