@@ -144,6 +144,7 @@ function RateEntry({
   onSignOut: () => Promise<void>;
 }) {
   const state = useRateData();
+  const router = useRouter();
   const now = useMemo(() => new Date(), []);
 
   const [inputs, setInputs] = useState<Record<string, Entry>>({});
@@ -339,6 +340,13 @@ function RateEntry({
         Rates cannot be edited or deleted — correct a mistake by recording a
         new observation.
       </Text>
+
+      <Pressable
+        onPress={() => router.push('/admin-news')}
+        className="self-start rounded-lg bg-raised px-4 py-2 active:opacity-70"
+      >
+        <Text className="text-sm font-semibold text-accent">Curate news ›</Text>
+      </Pressable>
 
       <Pressable
         onPress={() => void onSignOut()}

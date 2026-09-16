@@ -30,6 +30,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="news"
+        options={{
+          title: 'News',
+          tabBarIcon: ({ color }) => <TabGlyph color={color}>◫</TabGlyph>,
+        }}
+      />
+      <Tabs.Screen
         name="convert"
         options={{
           title: 'Convert',

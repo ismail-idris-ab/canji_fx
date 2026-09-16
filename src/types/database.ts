@@ -73,6 +73,74 @@ export type Database = {
           },
         ]
       }
+      news_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          published_at: string | null
+          sort_order: number
+          source_domain: string
+          title: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          published_at?: string | null
+          sort_order?: number
+          source_domain: string
+          title: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          published_at?: string | null
+          sort_order?: number
+          source_domain?: string
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_items_source_domain_fkey"
+            columns: ["source_domain"]
+            isOneToOne: false
+            referencedRelation: "news_sources"
+            referencedColumns: ["domain"]
+          },
+        ]
+      }
+      news_sources: {
+        Row: {
+          created_at: string
+          domain: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
