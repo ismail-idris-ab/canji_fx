@@ -309,7 +309,7 @@ Tests pass the current instant in explicitly rather than reading a clock, so a F
 
 **Tested: Rate Book, Upstream Feed, Alert Engine.** Not tested: the Push Dispatcher, the data-access hooks, the screens, the Edge Functions.
 
-Rate Book coverage: both conversion directions in the Parallel Market, confirming the correct side of the Spread each time; Official Market conversion via the Central Rate; behaviour when a Rate is absent; both Freshness rules including the Parallel boundaries at 6 and 24 hours; the publication-day rule specifically asserting that a Friday Rate Date reads Fresh on Saturday and Sunday, Aging the following Tuesday, Stale on Wednesday; weekday arithmetic across a month boundary; Gap computation, and its suppression when either side is Stale or no official counterpart exists.
+Rate Book coverage: both conversion directions in the Parallel Market, confirming the correct side of the Spread each time; Official Market conversion via the Central Rate; behaviour when a Rate is absent; both Freshness rules including the Parallel boundaries at 6 and 24 hours; the publication-day rule specifically asserting that a Friday Rate Date reads Fresh on Saturday and Sunday, Aging on Monday, Stale on Tuesday; weekday arithmetic across a month boundary; Gap computation, and its suppression when either side is Stale or no official counterpart exists.
 
 Upstream Feed coverage: labels carrying trailing whitespace and tab characters map correctly; unmapped labels are reported rather than dropped or guessed; both upstream date formats parse; dedupe identifies an already-stored pair and admits a changed figure for the same pair.
 

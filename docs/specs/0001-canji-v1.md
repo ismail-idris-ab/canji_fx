@@ -331,7 +331,7 @@ One internal seam: the pure domain module. All unit tests target it and nothing 
 
 **Conversion.** Both directions in the Parallel Market, confirming the correct side of the Spread is applied in each; the Official Market using the Central Rate; behaviour when a rate is absent.
 
-**Freshness.** Both rules. The Parallel Market boundaries at 6 and 24 hours. The Official Market publication-day rule, specifically that a Friday Rate Date reads Fresh on Saturday and Sunday, Aging on the following Tuesday, and Stale on Wednesday. Weekday arithmetic across a month boundary.
+**Freshness.** Both rules. The Parallel Market boundaries at 6 and 24 hours. The Official Market publication-day rule, specifically that a Friday Rate Date reads Fresh on Saturday and Sunday, Aging on Monday, and Stale on Tuesday. Weekday arithmetic across a month boundary.
 
 **Gap.** Correct computation from Parallel Sell against Official Central; suppression when either side is Stale; suppression when no Official Rate exists for the Quoted Currency.
 
