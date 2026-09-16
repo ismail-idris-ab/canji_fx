@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 
 import type { Currency, Rate } from '@/domain/types';
 import { readCache, writeCache } from '@/lib/cache';
+import { subscribeToRateInserts } from '@/lib/realtime';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -167,23 +168,16 @@ export function useRateData(): RateDataState {
     };
   }, [refresh]);
 
-  // Live updates. An insert on `rates` means a new observation exists, so
-  // refetch the view; the payload itself is deliberately not trusted to
-  // decide which Rate is now live.
-  useEffect(() => {
-    const channel = supabase
-      .channel('rates-inserts')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'rates' },
-        () => void refresh({ silent: true })
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [refresh]);
+  // Live updates. An insert on the rates table means a new observation
+  // exists, so refetch the view; the payload itself is deliberately not
+  // trusted to decide which Rate is now live.
+  //
+  // The subscription is shared across every screen that observes Rates, so
+  // one insert causes one refetch rather than one per mounted screen.
+  useEffect(
+    () => subscribeToRateInserts(() => void refresh({ silent: true })),
+    [refresh]
+  );
 
   // A backgrounded app misses realtime events, so returning to it refetches
   // rather than trusting whatever was last on screen.
