@@ -1,6 +1,8 @@
 import type { Conversion, Direction } from './conversion';
 import { convert } from './conversion';
 import { classifyFreshness } from './freshness';
+import type { Gap } from './gap';
+import { computeGap } from './gap';
 import type { Freshness, Market, Rate } from './types';
 
 /**
@@ -33,6 +35,11 @@ export type RateBook = {
     amount: number,
     direction: Direction
   ) => Conversion | null;
+  /**
+   * The Gap between Markets for a Quoted Currency, or null when it would
+   * mislead: either side Stale, or no counterpart to compare against.
+   */
+  gap: (currencyCode: string) => Gap | null;
   /** Every Quoted Currency with at least one Rate, in no particular order. */
   currencies: () => string[];
 };
@@ -69,6 +76,18 @@ export function createRateBook(rates: readonly Rate[], now: Date): RateBook {
     convert(currencyCode, market, amount, direction) {
       const rate = live.get(key(currencyCode, market));
       return rate ? convert(rate, amount, direction) : null;
+    },
+
+    gap(currencyCode) {
+      const parallel = live.get(key(currencyCode, 'parallel')) ?? null;
+      const official = live.get(key(currencyCode, 'official')) ?? null;
+
+      return computeGap(
+        parallel,
+        official,
+        parallel ? classifyFreshness(parallel, now) : null,
+        official ? classifyFreshness(official, now) : null
+      );
     },
 
     currencies() {

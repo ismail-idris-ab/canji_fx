@@ -12,7 +12,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { createRateBook } from '@/domain/rate-book';
-import { checkEntry, type Deviation } from '@/domain/rate-entry';
+import {
+  checkEntry,
+  type Deviation,
+  type EntryProblem,
+} from '@/domain/rate-entry';
 import { useAdmin } from '@/hooks/use-admin';
 import { useRateData } from '@/hooks/use-rate-data';
 import { formatNaira, formatObservedAt } from '@/lib/format';
@@ -130,7 +134,6 @@ function SignInForm({
     </View>
   );
 }
-
 function RateEntry({
   userId,
   email,
@@ -143,29 +146,68 @@ function RateEntry({
   const state = useRateData();
   const now = useMemo(() => new Date(), []);
 
-  const [buy, setBuy] = useState('');
-  const [sell, setSell] = useState('');
+  const [inputs, setInputs] = useState<Record<string, Entry>>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const data = state.status === 'ready' ? state.data : null;
   const book = useMemo(() => createRateBook(data?.rates ?? [], now), [data, now]);
 
-  const previous = book.latest('USD', 'parallel');
-  const check = checkEntry(buy, sell, previous);
+  // Only Tracked Currencies are observed by hand. Four entries is a job that
+  // gets done in a rate round; eleven is a chore that gets skipped, and
+  // unrecorded Rates decay into Stale ones.
+  const tracked = (data?.currencies ?? []).filter((c) => c.trackedParallel);
 
-  async function record(buyValue: number, sellValue: number) {
+  function set(code: string, side: 'buy' | 'sell', value: string) {
+    setInputs((current) => {
+      const existing = current[code] ?? { buy: '', sell: '' };
+      return { ...current, [code]: { ...existing, [side]: value } };
+    });
+    setMessage(null);
+  }
+
+  // A currency left entirely blank is skipped, not treated as an error: an
+  // Admin may genuinely have observed only some of the four.
+  const rows = tracked.map((currency) => {
+    const entry = inputs[currency.code] ?? { buy: '', sell: '' };
+    const touched = entry.buy.trim() !== '' || entry.sell.trim() !== '';
+    const previous = book.latest(currency.code, 'parallel');
+
+    return {
+      currency,
+      entry,
+      touched,
+      previous,
+      check: checkEntry(entry.buy, entry.sell, previous),
+    };
+  });
+
+  const touchedRows = rows.filter((row) => row.touched);
+  const readyRows = touchedRows.filter((row) => row.check.ok);
+  const blockedRows = touchedRows.filter((row) => !row.check.ok);
+  const canSubmit = readyRows.length > 0 && blockedRows.length === 0 && !saving;
+
+  const deviations = readyRows.flatMap((row) =>
+    row.check.ok && row.check.deviation
+      ? [{ code: row.currency.code, deviation: row.check.deviation }]
+      : []
+  );
+
+  async function record() {
     setSaving(true);
     setMessage(null);
 
-    const { error } = await supabase.from('rates').insert({
-      currency_code: 'USD',
-      market: 'parallel',
-      buy: buyValue,
-      sell: sellValue,
-      source_label: 'Parallel market survey',
-      created_by: userId,
-    });
+    // One round trip for the whole rate round.
+    const { error } = await supabase.from('rates').insert(
+      readyRows.map((row) => ({
+        currency_code: row.currency.code,
+        market: 'parallel' as const,
+        buy: row.check.ok ? row.check.buy : 0,
+        sell: row.check.ok ? row.check.sell : 0,
+        source_label: 'Parallel market survey' as const,
+        created_by: userId,
+      }))
+    );
 
     setSaving(false);
 
@@ -174,108 +216,123 @@ function RateEntry({
       return;
     }
 
-    setBuy('');
-    setSell('');
-    setMessage('Recorded.');
+    setInputs({});
+    setMessage(
+      `Recorded ${readyRows.length} observation${
+        readyRows.length === 1 ? '' : 's'
+      }.`
+    );
   }
 
   function submit() {
-    if (!check.ok) return;
-
-    if (check.deviation) {
-      confirmDeviation(check.deviation, () =>
-        void record(check.buy, check.sell)
-      );
+    if (!canSubmit) return;
+    if (deviations.length > 0) {
+      confirmDeviations(deviations, () => void record());
       return;
     }
-
-    void record(check.buy, check.sell);
+    void record();
   }
 
   return (
     <View className="gap-5">
       <View className="gap-1">
         <Text className="text-3xl font-bold tracking-tight text-ink">
-          Record rate
+          Record rates
         </Text>
-        <Text className="text-sm text-muted">USD · Parallel market</Text>
+        <Text className="text-sm text-muted">
+          Parallel market · leave a currency blank to skip it
+        </Text>
       </View>
 
-      <View className="gap-1 rounded-2xl border border-line bg-surface p-4">
-        <Text className="text-[11px] uppercase tracking-wider text-faint">
-          Currently live
-        </Text>
-        {previous ? (
-          <>
-            <Text className="text-base text-ink">
-              Buy {formatNaira(previous.buy ?? 0, 'parallel')} · Sell{' '}
-              {formatNaira(previous.sell ?? 0, 'parallel')}
+      {rows.map(({ currency, entry, previous, check, touched }) => (
+        <View
+          key={currency.code}
+          className="gap-3 rounded-2xl border border-line bg-surface p-5"
+        >
+          <View className="flex-row items-center justify-between">
+            <Text className="text-base font-semibold text-ink">
+              {currency.flagEmoji} {currency.code}
             </Text>
-            <Text className="text-xs text-muted">
-              {formatObservedAt(previous.observedAt, now)}
+            <Text className="text-xs text-faint">
+              {previous
+                ? `now ${formatNaira(
+                    previous.buy ?? 0,
+                    'parallel'
+                  )} / ${formatNaira(previous.sell ?? 0, 'parallel')} · ${formatObservedAt(
+                    previous.observedAt,
+                    now
+                  )}`
+                : 'never observed'}
             </Text>
-          </>
-        ) : (
-          <Text className="text-sm text-muted">
-            No parallel rate recorded yet.
-          </Text>
-        )}
-      </View>
+          </View>
 
-      <View className="gap-3 rounded-2xl border border-line bg-surface p-5">
-        <Field
-          label="Buy — what the market pays for a dollar"
-          value={buy}
-          onChangeText={setBuy}
-          keyboardType="decimal-pad"
-        />
-        <Field
-          label="Sell — what the market charges for a dollar"
-          value={sell}
-          onChangeText={setSell}
-          keyboardType="decimal-pad"
-        />
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <Field
+                label="Buy"
+                value={entry.buy}
+                onChangeText={(value) => set(currency.code, 'buy', value)}
+                keyboardType="decimal-pad"
+                placeholder={previous?.buy ? String(previous.buy) : '0'}
+              />
+            </View>
+            <View className="flex-1">
+              <Field
+                label="Sell"
+                value={entry.sell}
+                onChangeText={(value) => set(currency.code, 'sell', value)}
+                keyboardType="decimal-pad"
+                placeholder={previous?.sell ? String(previous.sell) : '0'}
+              />
+            </View>
+          </View>
 
-        {!check.ok && check.problem.kind === 'invertedSpread' && (
-          <Text className="text-xs leading-5 text-stale">
-            Sell is below buy. That spread is inverted, which is almost always
-            a slipped digit.
-          </Text>
-        )}
+          {touched && !check.ok && (
+            <Text className="text-xs leading-5 text-stale">
+              {problemText(check.problem.kind)}
+            </Text>
+          )}
 
-        {check.ok && check.deviation && (
-          <Text className="text-xs leading-5 text-aging">
-            That is {(check.deviation.fraction * 100).toFixed(0)}% away from
-            the last {check.deviation.side} rate. You will be asked to confirm.
-          </Text>
-        )}
+          {touched && check.ok && check.deviation && (
+            <Text className="text-xs leading-5 text-aging">
+              {(check.deviation.fraction * 100).toFixed(0)}% away from the last{' '}
+              {check.deviation.side} rate. You will be asked to confirm.
+            </Text>
+          )}
+        </View>
+      ))}
 
-        {message && (
-          <Text
-            className={`text-xs ${
-              message === 'Recorded.' ? 'text-fresh' : 'text-stale'
-            }`}
-          >
-            {message}
-          </Text>
-        )}
-
-        <Pressable
-          onPress={submit}
-          disabled={!check.ok || saving}
-          className={`rounded-xl px-4 py-3 active:opacity-70 ${
-            check.ok && !saving ? 'bg-accent' : 'bg-raised'
+      {message && (
+        <Text
+          className={`text-xs ${
+            message.startsWith('Recorded') ? 'text-fresh' : 'text-stale'
           }`}
         >
-          <Text
-            className={`text-center text-sm font-bold ${
-              check.ok && !saving ? 'text-ground' : 'text-faint'
-            }`}
-          >
-            {saving ? 'Recording…' : 'Record observation'}
-          </Text>
-        </Pressable>
-      </View>
+          {message}
+        </Text>
+      )}
+
+      <Pressable
+        onPress={submit}
+        disabled={!canSubmit}
+        className={`rounded-xl px-4 py-3 active:opacity-70 ${
+          canSubmit ? 'bg-accent' : 'bg-raised'
+        }`}
+      >
+        <Text
+          className={`text-center text-sm font-bold ${
+            canSubmit ? 'text-ground' : 'text-faint'
+          }`}
+        >
+          {saving
+            ? 'Recording…'
+            : readyRows.length > 0
+              ? `Record ${readyRows.length} observation${
+                  readyRows.length === 1 ? '' : 's'
+                }`
+              : 'Record observations'}
+        </Text>
+      </Pressable>
 
       <Text className="text-xs leading-5 text-faint">
         Recorded as &ldquo;Parallel market survey&rdquo; and attributed to you.
@@ -295,15 +352,43 @@ function RateEntry({
   );
 }
 
-function confirmDeviation(deviation: Deviation, onConfirm: () => void) {
+type Entry = { buy: string; sell: string };
+
+function problemText(kind: EntryProblem['kind']): string {
+  switch (kind) {
+    case 'incomplete':
+      return 'Both sides are needed. A parallel rate is always two-sided.';
+    case 'notANumber':
+      return 'That is not a number.';
+    case 'nonPositive':
+      return 'A rate must be greater than zero.';
+    case 'invertedSpread':
+      return 'Sell is below buy. That spread is inverted, which is almost always a slipped digit.';
+  }
+}
+
+/**
+ * One confirmation for the whole round, listing every figure that moved far
+ * enough to be worth a second look. Under append-only storage these cannot be
+ * undone once recorded, and the wording says so.
+ */
+function confirmDeviations(
+  deviations: { code: string; deviation: Deviation }[],
+  onConfirm: () => void
+) {
+  const lines = deviations
+    .map(
+      ({ code, deviation }) =>
+        `${code}: ${formatNaira(deviation.previous, 'parallel')} → ${formatNaira(
+          deviation.typed,
+          'parallel'
+        )} (${(deviation.fraction * 100).toFixed(0)}%)`
+    )
+    .join('\n');
+
   Alert.alert(
-    'That is a big move',
-    `The last ${deviation.side} rate was ${formatNaira(
-      deviation.previous,
-      'parallel'
-    )}. You typed ${formatNaira(deviation.typed, 'parallel')} — a change of ${(
-      deviation.fraction * 100
-    ).toFixed(0)}%.\n\nThis cannot be undone once recorded.`,
+    deviations.length === 1 ? 'That is a big move' : 'Those are big moves',
+    `${lines}\n\nThis cannot be undone once recorded.`,
     [
       { text: 'Check again', style: 'cancel' },
       { text: 'Record it', style: 'destructive', onPress: onConfirm },

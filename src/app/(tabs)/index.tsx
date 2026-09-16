@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CurrencyRow } from '@/components/currency-row';
+import { GapLine } from '@/components/gap-line';
 import { MarketToggle } from '@/components/market-toggle';
 import { RateCard } from '@/components/rate-card';
 import { createRateBook } from '@/domain/rate-book';
@@ -50,6 +51,8 @@ export default function RatesScreen() {
   const featuredFreshness = featuredCode
     ? book.freshness(featuredCode, market)
     : null;
+
+  const featuredGap = featuredCode ? book.gap(featuredCode) : null;
 
   const rest = currencies.filter((c) => c.code !== featuredCode);
 
@@ -122,6 +125,10 @@ export default function RatesScreen() {
               />
             ) : (
               <EmptyMarket market={market} />
+            )}
+
+            {featuredCode && featuredGap && (
+              <GapLine gap={featuredGap} code={featuredCode} />
             )}
 
             <View className="rounded-2xl border border-line bg-surface px-4 py-1">
