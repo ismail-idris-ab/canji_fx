@@ -36,3 +36,16 @@ yarn-error.*
 # OS
 .DS_Store
 Thumbs.db
+
+# Native signing artefacts
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# Local export smoke output
+.expo-smoke/
