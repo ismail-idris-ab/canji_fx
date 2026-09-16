@@ -159,6 +159,59 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_alerts: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency_code: string
+          direction: Database["public"]["Enums"]["alert_direction"]
+          expo_push_token: string
+          id: string
+          last_fired_at: string | null
+          last_seen_rate: number | null
+          market: Database["public"]["Enums"]["market"]
+          threshold: number
+          user_id: string
+          watched_side: Database["public"]["Enums"]["watched_side"]
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency_code: string
+          direction: Database["public"]["Enums"]["alert_direction"]
+          expo_push_token: string
+          id?: string
+          last_fired_at?: string | null
+          last_seen_rate?: number | null
+          market: Database["public"]["Enums"]["market"]
+          threshold: number
+          user_id: string
+          watched_side: Database["public"]["Enums"]["watched_side"]
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency_code?: string
+          direction?: Database["public"]["Enums"]["alert_direction"]
+          expo_push_token?: string
+          id?: string
+          last_fired_at?: string | null
+          last_seen_rate?: number | null
+          market?: Database["public"]["Enums"]["market"]
+          threshold?: number
+          user_id?: string
+          watched_side?: Database["public"]["Enums"]["watched_side"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_alerts_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       rates: {
         Row: {
           buy: number | null
@@ -206,6 +259,27 @@ export type Database = {
           },
         ]
       }
+      system_events: {
+        Row: {
+          created_at: string
+          detail: Json | null
+          id: string
+          kind: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json | null
+          id?: string
+          kind: string
+        }
+        Update: {
+          created_at?: string
+          detail?: Json | null
+          id?: string
+          kind?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       latest_rates: {
@@ -233,13 +307,16 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      purge_abandoned_anonymous_users: { Args: never; Returns: number }
     }
     Enums: {
+      alert_direction: "above" | "below"
       market: "parallel" | "official"
       rate_source:
         | "Parallel market survey"
         | "Central Bank of Nigeria"
         | "Central Bank of Nigeria (manual entry)"
+      watched_side: "buy" | "central" | "sell"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -367,12 +444,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alert_direction: ["above", "below"],
       market: ["parallel", "official"],
       rate_source: [
         "Parallel market survey",
         "Central Bank of Nigeria",
         "Central Bank of Nigeria (manual entry)",
       ],
+      watched_side: ["buy", "central", "sell"],
     },
   },
 } as const

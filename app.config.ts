@@ -61,6 +61,15 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     [
+      'expo-notifications',
+      {
+        // Android renders the notification icon as a silhouette, so a
+        // monochrome asset is required; the accent tints it.
+        icon: './assets/images/android-icon-monochrome.png',
+        color: '#F5B301',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#0B0B0F',
