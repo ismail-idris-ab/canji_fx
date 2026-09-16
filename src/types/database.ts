@@ -73,6 +73,24 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_admin?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+        }
+        Relationships: []
+      }
       rates: {
         Row: {
           buy: number | null
@@ -146,7 +164,7 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       market: "parallel" | "official"

@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -26,6 +26,7 @@ import { useRateData } from '@/hooks/use-rate-data';
  */
 export default function RatesScreen() {
   const [market, setMarket] = useState<Market>('official');
+  const router = useRouter();
   const state = useRateData();
 
   // One instant for the whole render, so no two rows can disagree about what
@@ -70,9 +71,18 @@ export default function RatesScreen() {
       >
         <View className="flex-row items-start justify-between">
           <View className="gap-1">
-            <Text className="text-3xl font-bold tracking-tight text-ink">
-              Canji
-            </Text>
+            {/* Long-press is the only way into the admin area. It is not
+                security — the row-level security policies are — but it keeps
+                an administrative surface out of a Reader's way entirely. */}
+            <Pressable
+              onLongPress={() => router.push('/admin')}
+              delayLongPress={800}
+              accessibilityRole="header"
+            >
+              <Text className="text-3xl font-bold tracking-tight text-ink">
+                Canji
+              </Text>
+            </Pressable>
             <Text className="text-sm text-muted">
               Naira exchange rates, with their age
             </Text>
