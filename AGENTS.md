@@ -45,3 +45,14 @@ reader would otherwise assume the opposite:
 - `0002` Readers are anonymous authenticated users, not device identifiers
 - `0003` Markets are named as markets, not after their publisher
 - `0004` Official Rates come from an undocumented CBN JSON endpoint
+
+## Edge Functions
+
+`supabase/functions/**` runs on Deno and is excluded from the app's tsconfig.
+
+`_shared/upstream-feed.ts` is **generated**. The source of truth is
+`src/domain/upstream-feed.ts`, because that is where its tests run. After
+changing it, run `npm run sync:functions` before deploying.
+
+Deploy with `npx supabase functions deploy <name> --use-api` — the `--use-api`
+flag avoids needing Docker.

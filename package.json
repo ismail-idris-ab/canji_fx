@@ -50,7 +50,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:types": "supabase gen types typescript --project-id mxhhffozppzmtrmcwcfy > src/types/database.ts",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "sync:functions": "node -e \"const fs=require('fs');const s=fs.readFileSync('src/domain/upstream-feed.ts','utf8');fs.writeFileSync('supabase/functions/_shared/upstream-feed.ts','// GENERATED FILE — do not edit. Synced from src/domain/upstream-feed.ts.\n\n'+s)\""
   },
   "private": true
 }
