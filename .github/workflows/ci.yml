@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # 08:00 UTC daily. The contract job is the point of this schedule: the
+    # upstream CBN endpoint can reshape on a day nobody pushes, and the whole
+    # reason it is watched is that such a change is otherwise silent.
+    - cron: '0 8 * * *'
+
+jobs:
+  verify:
+    name: Typecheck and unit tests
+    runs-on: ubuntu-latest
+    # A push should not be blocked by a scheduled run of the contract job.
+    if: github.event_name != 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        # The three pure domain modules. No network, no database, no mocks.
+        run: npm test
+
+      - name: Shared function modules are in sync
+        # supabase/functions/_shared holds generated copies of the domain
+        # modules, because Deno cannot import from src/. If they drift, the
+        # code running in production stops being the code that has tests.
+        run: |
+          npm run sync:functions
+          git diff --exit-code -- supabase/functions/_shared \
+            || (echo "::error::supabase/functions/_shared is stale. Run 'npm run sync:functions' and commit." && exit 1)
+
+  contract:
+    name: Live CBN endpoint contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Contract test
+        # Failing here means the upstream moved, not that this repository
+        # broke. Check the endpoint by hand before changing the parser.
+        run: npm run test:contract

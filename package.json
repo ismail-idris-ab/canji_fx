@@ -52,7 +52,8 @@
     "test:watch": "vitest",
     "db:types": "supabase gen types typescript --project-id mxhhffozppzmtrmcwcfy > src/types/database.ts",
     "db:push": "supabase db push",
-    "sync:functions": "node scripts/sync-functions.mjs"
+    "sync:functions": "node scripts/sync-functions.mjs",
+    "test:contract": "vitest run --config vitest.contract.config.mts"
   },
   "private": true
 }

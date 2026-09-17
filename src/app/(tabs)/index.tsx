@@ -137,6 +137,7 @@ export default function RatesScreen() {
                   market={market}
                   rate={book.latest(currency.code, market)}
                   freshness={book.freshness(currency.code, market)}
+                  now={now}
                 />
               ))}
             </View>
