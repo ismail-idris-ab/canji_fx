@@ -20,7 +20,8 @@ import { createRateBook } from '@/domain/rate-book';
 import { useHistory } from '@/hooks/use-history';
 import { useNow } from '@/hooks/use-now';
 import { useRateData } from '@/hooks/use-rate-data';
-import { formatNaira, formatRateDate } from '@/lib/format';
+import { exportSeriesAsCsv } from '@/lib/export-csv';
+import { formatNaira, formatObservedAt, formatRateDate } from '@/lib/format';
 
 /**
  * One Quoted Currency in full: its live Rate, the Gap, and its history.
@@ -39,6 +40,8 @@ export default function CurrencyScreen() {
   const history = useHistory(currencyCode);
 
   const [range, setRange] = useState<Range>('30d');
+  const [exporting, setExporting] = useState(false);
+  const [exportProblem, setExportProblem] = useState<string | null>(null);
 
   const data = rateData.status === 'ready' ? rateData.data : null;
   const book = useMemo(() => createRateBook(data?.rates ?? [], now), [data, now]);
@@ -250,6 +253,54 @@ export default function CurrencyScreen() {
                 No parallel rates recorded for {currencyCode} yet.
               </Text>
             )}
+          </View>
+        )}
+
+        {history.status === 'ready' && (
+          <View className="gap-2">
+            <Pressable
+              onPress={() => {
+                setExporting(true);
+                setExportProblem(null);
+
+                void exportSeriesAsCsv(
+                  parallelSeries,
+                  officialSeries,
+                  {
+                    currencyCode,
+                    rangeLabel: RANGE_LABEL[effectiveRange],
+                    retrievedAt: `${formatRateDate(today)}, ${formatObservedAt(now, now)}`,
+                  },
+                  today
+                ).then((outcome) => {
+                  setExporting(false);
+                  if (!outcome.ok) setExportProblem(outcome.reason);
+                });
+              }}
+              disabled={exporting}
+              className={`rounded-xl px-4 py-3 active:opacity-70 ${
+                exporting ? 'bg-raised' : 'border border-line bg-surface'
+              }`}
+            >
+              <Text
+                className={`text-center text-sm font-semibold ${
+                  exporting ? 'text-faint' : 'text-accent'
+                }`}
+              >
+                {exporting ? 'Preparing…' : 'Export this range as CSV'}
+              </Text>
+            </Pressable>
+
+            {exportProblem && (
+              <Text className="text-xs leading-5 text-stale">
+                {exportProblem}
+              </Text>
+            )}
+
+            <Text className="text-xs leading-5 text-faint">
+              The file carries its own source credit and disclaimer, because a
+              spreadsheet shared onward arrives with no other context.
+            </Text>
           </View>
         )}
 
