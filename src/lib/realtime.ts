@@ -30,7 +30,7 @@ export function subscribeToRateInserts(listener: Listener): () => void {
   if (!channel) {
     sequence += 1;
     channel = supabase
-      .channel(`canji-rates-${sequence}`)
+      .channel(`aboki-rates-${sequence}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'rates' },

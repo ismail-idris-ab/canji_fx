@@ -235,7 +235,7 @@ export default function AlertsScreen() {
         {alerts.status === 'ready' && alerts.alerts.length === 0 && (
           <View className="rounded-2xl border border-line bg-surface p-5">
             <Text className="text-sm leading-5 text-muted">
-              No alerts yet. Canji will notify you once when a rate crosses the
+              No alerts yet. Aboki Rate will notify you once when a rate crosses the
               number you set.
             </Text>
           </View>

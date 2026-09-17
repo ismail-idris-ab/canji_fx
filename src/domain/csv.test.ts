@@ -111,6 +111,6 @@ describe('the file itself', () => {
 
 describe('the filename', () => {
   it('says what it holds and sorts by date', () => {
-    expect(csvFilename('USD', '2026-09-17')).toBe('canji-usd-2026-09-17.csv');
+    expect(csvFilename('USD', '2026-09-17')).toBe('aboki-rate-usd-2026-09-17.csv');
   });
 });

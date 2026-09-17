@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Currency, Market, Rate, RateSource } from '@/domain/types';
 
 /**
- * The last payload Canji saw, kept so the app opens with rates rather than a
+ * The last payload Aboki Rate saw, kept so the app opens with rates rather than a
  * spinner on a weak connection.
  *
  * Rates and currencies are stored together as one payload. Caching them
@@ -14,7 +14,7 @@ import type { Currency, Market, Rate, RateSource } from '@/domain/types';
  * Rates carry their real Freshness and can never be mistaken for live data.
  */
 
-const KEY = 'canji.rates.v1';
+const KEY = 'aboki-rate.rates.v1';
 
 type StoredRate = Omit<Rate, 'observedAt'> & { observedAt: string };
 

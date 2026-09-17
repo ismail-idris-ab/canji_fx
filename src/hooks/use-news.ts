@@ -18,7 +18,7 @@ export type NewsState =
   | { status: 'ready'; items: NewsItem[]; retry: () => void };
 
 /**
- * Curated FX headlines. Canji holds a pointer to each article and nothing
+ * Curated FX headlines. Aboki Rate holds a pointer to each article and nothing
  * more — no body text is stored, so none can be shown.
  */
 export function useNews(): NewsState {

@@ -2,7 +2,7 @@
 
 Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before writing any code.
 
-# Canji
+# Aboki Rate
 
 Domain vocabulary lives in `CONTEXT.md`. Use those terms exactly — Rate,
 Market, Freshness, Spread, Gap, Observed At, Rate Date, Tracked Currency.

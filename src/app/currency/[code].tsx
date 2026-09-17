@@ -66,7 +66,7 @@ export default function CurrencyScreen() {
   const hasParallel = parallelDays.length > 0;
 
   // The comparison is anchored on the parallel series, which begins the day
-  // Canji started observing and cannot be reconstructed. Offering a range the
+  // Aboki Rate started observing and cannot be reconstructed. Offering a range the
   // parallel line cannot fill would draw one complete line and one stub,
   // inviting the reader to conclude the street market did not exist before
   // then. With no parallel data at all, the official series anchors instead.
@@ -246,7 +246,7 @@ export default function CurrencyScreen() {
               <Text className="text-xs leading-5 text-faint">
                 Parallel rates observed since {formatRateDate(parallelEarliest)}
                 . Earlier street rates were never recorded, so ranges widen as
-                Canji observes more.
+                Aboki Rate observes more.
               </Text>
             ) : (
               <Text className="text-xs leading-5 text-faint">
@@ -306,7 +306,7 @@ export default function CurrencyScreen() {
 
         <Text className="text-xs leading-5 text-faint">
           Rates are indicative, sourced from market observation, and for
-          information only. Canji does not set, offer, or guarantee any rate.
+          information only. Aboki Rate does not set, offer, or guarantee any rate.
         </Text>
       </ScrollView>
     </SafeAreaView>

@@ -167,7 +167,7 @@ export default function ConvertScreen() {
 
         <Text className="text-xs leading-5 text-faint">
           Rates are indicative, sourced from market observation, and for
-          information only. Canji does not set, offer, or guarantee any rate.
+          information only. Aboki Rate does not set, offer, or guarantee any rate.
         </Text>
       </ScrollView>
     </SafeAreaView>

@@ -1,6 +1,6 @@
 # Official Rates come from an undocumented CBN JSON endpoint
 
-Canji fetches Official Market Rates from `cbn.gov.ng/api/GetAllExchangeRatesGRAPH`, an unauthenticated JSON endpoint that backs the CBN's own rates page. It is undocumented and unversioned. It was verified live during specification and is the most faithful source available.
+Aboki Rate fetches Official Market Rates from `cbn.gov.ng/api/GetAllExchangeRatesGRAPH`, an unauthenticated JSON endpoint that backs the CBN's own rates page. It is undocumented and unversioned. It was verified live during specification and is the most faithful source available.
 
 ## Considered options
 

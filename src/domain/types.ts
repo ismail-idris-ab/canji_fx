@@ -6,7 +6,7 @@
 export type Market = 'parallel' | 'official';
 
 /**
- * A currency Canji reports against the Naira, with its display configuration.
+ * A currency Aboki Rate reports against the Naira, with its display configuration.
  *
  * `hasOfficial` is false for a currency traded on the Nigerian street that
  * the CBN does not publish — CAD today. That absence is permanent and must
@@ -27,7 +27,7 @@ export type RateSource =
   /**
    * Bulk-imported history. Distinct from a live fetch so a Reader — or an
    * analyst reading an export — can tell the two apart. These rows keep an
-   * honest Observed At: Canji recorded them at import time, and back-dating
+   * honest Observed At: Aboki Rate recorded them at import time, and back-dating
    * it would claim an observation that never happened.
    */
   | 'Central Bank of Nigeria (historical import)';
@@ -48,7 +48,7 @@ export type Rate = {
   sourceLabel: RateSource;
   /** The trading day the Source says this belongs to, as YYYY-MM-DD. */
   rateDate: string | null;
-  /** Observed At: when Canji recorded this observation. */
+  /** Observed At: when Aboki Rate recorded this observation. */
   observedAt: Date;
 };
 

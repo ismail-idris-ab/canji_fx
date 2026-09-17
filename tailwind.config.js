@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Canji is a committed dark design. Tokens are named by role so a
+        // Aboki Rate is a committed dark design. Tokens are named by role so a
         // screen never hardcodes a hex value.
         ground: '#0B0B0F',
         surface: '#15151C',
@@ -15,7 +15,7 @@ module.exports = {
         muted: '#8A8A99',
         faint: '#5A5A68',
 
-        // Amber/gold. Deliberately green-free so Canji does not read as
+        // Amber/gold. Deliberately green-free so Aboki Rate does not read as
         // Aboki Forex, and so the Freshness ramp below can sit on the same
         // warm hue family without colliding with the brand colour.
         accent: '#F5B301',

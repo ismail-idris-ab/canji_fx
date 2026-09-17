@@ -4,7 +4,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
  * scrape-og — reads Open Graph metadata from an article URL.
  *
  * Returns a headline, image and publisher. It deliberately never returns
- * article text: Canji indexes other people's work and sends readers to them,
+ * article text: Aboki Rate indexes other people's work and sends readers to them,
  * and reproducing the body would make it a republisher instead.
  *
  * Two guards, in this order, and the order matters:
@@ -124,9 +124,9 @@ Deno.serve(async (request) => {
   try {
     const response = await fetch(target.toString(), {
       headers: {
-        // Some publishers serve a stub to unknown agents. Identifying Canji
+        // Some publishers serve a stub to unknown agents. Identifying Aboki Rate
         // honestly is better than impersonating a browser.
-        'User-Agent': 'CanjiBot/1.0 (+https://canji.ng)',
+        'User-Agent': 'AbokiRateBot/1.0 (+https://abokirate.ng)',
         Accept: 'text/html',
       },
       redirect: 'follow',

@@ -56,7 +56,7 @@ export function ComparisonChart({
         className="items-center justify-center rounded-2xl border border-line bg-surface p-5"
       >
         <Text className="text-center text-sm leading-5 text-muted">
-          Not enough observations yet to compare the two markets. Canji plots
+          Not enough observations yet to compare the two markets. Aboki Rate plots
           only what it has actually seen.
         </Text>
       </View>

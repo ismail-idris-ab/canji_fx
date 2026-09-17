@@ -82,7 +82,7 @@ export type CsvMeta = {
 
 export function buildCsv(rows: readonly CsvRow[], meta: CsvMeta): string {
   const lines: string[] = [
-    `# Canji — ${meta.currencyCode} against the Nigerian Naira (${meta.rangeLabel})`,
+    `# Aboki Rate — ${meta.currencyCode} against the Nigerian Naira (${meta.rangeLabel})`,
     '# Official market rates published by the Central Bank of Nigeria (cbn.gov.ng), reproduced unaltered.',
     '# Parallel market rates are indicative, sourced from market observation, and for information only.',
     '# They are not an offer, a quotation, or financial advice.',
@@ -110,5 +110,5 @@ export function buildCsv(rows: readonly CsvRow[], meta: CsvMeta): string {
 
 /** A filename that sorts sensibly and says what it holds. */
 export function csvFilename(currencyCode: string, isoDay: string): string {
-  return `canji-${currencyCode.toLowerCase()}-${isoDay}.csv`;
+  return `aboki-rate-${currencyCode.toLowerCase()}-${isoDay}.csv`;
 }

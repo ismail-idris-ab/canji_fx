@@ -40,7 +40,7 @@ function classifyParallel(observedAt: Date, now: Date): Freshness {
  * No holiday calendar is maintained. A Nigerian public holiday therefore
  * shows Aging for a day, which is honest rather than wrong: the figure
  * genuinely is a day old, and saying so costs less than silently claiming
- * currency Canji cannot verify.
+ * currency Aboki Rate cannot verify.
  */
 function classifyOfficial(rateDate: string | null, now: Date): Freshness {
   // An official Rate without a Rate Date cannot be placed on the publication

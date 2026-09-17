@@ -1,17 +1,17 @@
-# Canji
+# Aboki Rate
 
-Canji reports Nigerian foreign-exchange rates. It observes and republishes rates that others set — it does not set, quote, guarantee, or transact in them. Every term below is chosen to keep that distinction visible.
+Aboki Rate reports Nigerian foreign-exchange rates. It observes and republishes rates that others set — it does not set, quote, guarantee, or transact in them. Every term below is chosen to keep that distinction visible.
 
 ## Language
 
 ### Money and rates
 
 **Naira**:
-The Nigerian naira (NGN). The base of every rate Canji reports; never itself a Quoted Currency.
+The Nigerian naira (NGN). The base of every rate Aboki Rate reports; never itself a Quoted Currency.
 _Avoid_: NGN as a listed currency, base currency
 
 **Quoted Currency**:
-A foreign currency whose value Canji reports against the Naira, such as USD or GBP.
+A foreign currency whose value Aboki Rate reports against the Naira, such as USD or GBP.
 _Avoid_: currency pair, symbol, ticker
 
 **Tracked Currency**:
@@ -19,7 +19,7 @@ A Quoted Currency the Admin observes in the Parallel Market. A small set — mos
 _Avoid_: supported currency, enabled currency
 
 **Rate**:
-An observation of what one unit of a Quoted Currency was worth in Naira, in one Market, at one moment, according to one Source. A Rate is a historical record of an observation, never a live price offered by Canji.
+An observation of what one unit of a Quoted Currency was worth in Naira, in one Market, at one moment, according to one Source. A Rate is a historical record of an observation, never a live price offered by Aboki Rate.
 _Avoid_: price, quote, our rate, the rate we give
 
 **Correction**:
@@ -51,7 +51,7 @@ _Avoid_: spread (reserved for within-market), premium, arbitrage
 ### Markets
 
 **Market**:
-A distinct place rates are formed and observed. Canji reports exactly two: the Parallel Market and the Official Market.
+A distinct place rates are formed and observed. Aboki Rate reports exactly two: the Parallel Market and the Official Market.
 _Avoid_: exchange, channel, venue
 
 **Parallel Market**:
@@ -69,11 +69,11 @@ The institution or method a Rate came from, named on the Rate itself. Every disp
 _Avoid_: provider, feed, origin
 
 **Observed At**:
-The moment a Rate was recorded by Canji. Always shown to the reader alongside the Rate; a Rate without its Observed At is never displayed.
+The moment a Rate was recorded by Aboki Rate. Always shown to the reader alongside the Rate; a Rate without its Observed At is never displayed.
 _Avoid_: updated at, timestamp, last refreshed
 
 **Rate Date**:
-The day a Rate belongs to according to its Source, which is not the moment Canji observed it. An Official Market Rate fetched on Monday may carry Friday's Rate Date.
+The day a Rate belongs to according to its Source, which is not the moment Aboki Rate observed it. An Official Market Rate fetched on Monday may carry Friday's Rate Date.
 _Avoid_: date, effective date, as-of date
 
 **Freshness**:
@@ -87,7 +87,7 @@ _Avoid_: operator, dealer, trader, publisher
 ### News
 
 **News Item**:
-A pointer to an article published elsewhere — its headline, publisher, image and link. Canji never holds or shows article text.
+A pointer to an article published elsewhere — its headline, publisher, image and link. Aboki Rate never holds or shows article text.
 _Avoid_: article, story, post, content
 
 **News Source**:
@@ -109,5 +109,5 @@ The moment a Rate moves from one side of a Rate Alert's threshold to the other. 
 _Avoid_: breach, hit, match
 
 **Reader**:
-Someone who uses Canji to look up rates. Known to the system only as a device, unless they choose to identify themselves.
+Someone who uses Aboki Rate to look up rates. Known to the system only as a device, unless they choose to identify themselves.
 _Avoid_: user, customer, client, trader

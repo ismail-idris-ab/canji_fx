@@ -19,26 +19,26 @@ function fromEnv(name: string): string | undefined {
   const value = process.env[name];
   if (!value) {
     console.warn(
-      `[canji] ${name} is not set. Fine for tooling; the app will refuse to start without it.`
+      `[aboki-rate] ${name} is not set. Fine for tooling; the app will refuse to start without it.`
     );
   }
   return value;
 }
 
 const config: ExpoConfig = {
-  name: 'Canji',
-  slug: 'canji',
+  name: 'Aboki Rate',
+  slug: 'aboki-rate',
   owner: 'aiiman-tech',
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'canji',
+  scheme: 'abokirate',
 
-  // Canji commits to a dark design; it does not follow the system theme.
+  // Aboki Rate commits to a dark design; it does not follow the system theme.
   userInterfaceStyle: 'dark',
 
   android: {
-    package: 'ng.canji.app',
+    package: 'ng.abokirate.app',
     adaptiveIcon: {
       backgroundColor: '#0B0B0F',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -49,7 +49,7 @@ const config: ExpoConfig = {
   },
 
   ios: {
-    bundleIdentifier: 'ng.canji.app',
+    bundleIdentifier: 'ng.abokirate.app',
     icon: './assets/expo.icon',
   },
 

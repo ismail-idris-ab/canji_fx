@@ -39,7 +39,7 @@ const LABELS: Record<string, string> = {
 
 async function fetchFeed(): Promise<unknown> {
   const response = await fetch(ENDPOINT, {
-    headers: { Accept: 'application/json', 'User-Agent': 'CanjiBot/1.0' },
+    headers: { Accept: 'application/json', 'User-Agent': 'AbokiRateBot/1.0' },
     signal: AbortSignal.timeout(30_000),
   });
 
@@ -86,7 +86,7 @@ describe('the live CBN feed', { timeout: 60_000 }, () => {
     const parsed = parseUpstream(await fetchFeed(), LABELS);
 
     // CFA, WAUA and SDR are excluded on purpose. Anything else appearing here
-    // is a currency the CBN has started publishing that Canji is silently
+    // is a currency the CBN has started publishing that Aboki Rate is silently
     // dropping, and the mapping table should be extended.
     const unexpected = parsed.unmapped.filter(
       (label) => !['CFA', 'WAUA', 'SDR'].includes(label)

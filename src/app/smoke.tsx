@@ -66,7 +66,7 @@ export default function SmokeScreen() {
       <ScrollView contentContainerClassName="px-5 py-8 gap-6">
         <View className="gap-1">
           <Text className="text-3xl font-bold tracking-tight text-ink">
-            Canji
+            Aboki Rate
           </Text>
           <Text className="text-sm text-muted">Scaffold smoke test</Text>
         </View>
@@ -115,7 +115,7 @@ export default function SmokeScreen() {
         />
 
         <Text className="text-xs leading-5 text-faint">
-          Rates shown in Canji are indicative, sourced from market observation,
+          Rates shown in Aboki Rate are indicative, sourced from market observation,
           and for information only. This screen shows no rates — it is a build
           check.
         </Text>

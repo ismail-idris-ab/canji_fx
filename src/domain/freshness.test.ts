@@ -116,7 +116,7 @@ describe('Official Market freshness', () => {
     ).toBe('fresh');
   });
 
-  it('ignores how long ago Canji fetched it, using only the rate date', () => {
+  it('ignores how long ago Aboki Rate fetched it, using only the rate date', () => {
     const fetchedLongAgo: Rate = {
       ...officialRate('2026-09-15'),
       observedAt: new Date('2020-01-01T00:00:00Z'),

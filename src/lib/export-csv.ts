@@ -56,7 +56,7 @@ export async function exportSeriesAsCsv(
     await Sharing.shareAsync(file.uri, {
       mimeType: 'text/csv',
       UTI: 'public.comma-separated-values-text',
-      dialogTitle: `${meta.currencyCode} rates from Canji`,
+      dialogTitle: `${meta.currencyCode} rates from Aboki Rate`,
     });
 
     return { ok: true };

@@ -18,7 +18,7 @@ import { formatWatDay } from '@/lib/format';
  * News list.
  *
  * Each card is a pointer to somebody else's article. Tapping opens the
- * original in the system browser so the publisher gets the visit; Canji
+ * original in the system browser so the publisher gets the visit; Aboki Rate
  * never renders their text.
  */
 export default function NewsScreen() {
@@ -87,7 +87,7 @@ export default function NewsScreen() {
           state.items.map((item) => <NewsCard key={item.id} item={item} />)}
 
         <Text className="text-xs leading-5 text-faint">
-          Headlines and images belong to their publishers. Canji links to the
+          Headlines and images belong to their publishers. Aboki Rate links to the
           original and stores no article text.
         </Text>
       </ScrollView>
@@ -96,7 +96,7 @@ export default function NewsScreen() {
 }
 
 function NewsCard({ item }: { item: NewsItem }) {
-  // Images are hot-linked rather than re-hosted, which keeps Canji an index
+  // Images are hot-linked rather than re-hosted, which keeps Aboki Rate an index
   // rather than a copy. Hot-linking can fail, so the card must survive it.
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(item.imageUrl) && !imageFailed;

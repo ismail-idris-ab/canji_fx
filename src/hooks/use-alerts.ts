@@ -101,7 +101,7 @@ export function useAlerts(): AlertsState {
           ok: false,
           permissionDenied: true,
           reason:
-            'Canji cannot send alerts without notification permission. You can turn it on in your phone settings.',
+            'Aboki Rate cannot send alerts without notification permission. You can turn it on in your phone settings.',
         };
       }
 

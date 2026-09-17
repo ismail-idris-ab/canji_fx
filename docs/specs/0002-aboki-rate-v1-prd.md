@@ -1,4 +1,4 @@
-# PRD — Canji v1
+# PRD — Aboki Rate v1
 
 Vocabulary: see [CONTEXT.md](../../CONTEXT.md). Capitalised terms are defined there.
 
@@ -16,7 +16,7 @@ A second problem sits behind the first. Anyone publishing parallel rates in Nige
 
 ## Solution
 
-Canji is a mobile application that reports Nigerian foreign-exchange rates and is relentlessly explicit about their provenance and age.
+Aboki Rate is a mobile application that reports Nigerian foreign-exchange rates and is relentlessly explicit about their provenance and age.
 
 For each Quoted Currency it shows two Markets. The Parallel Market figure is observed by the Admin several times a day and carries a Buy Rate and a Sell Rate. The Official Market figure is fetched automatically from the Central Bank of Nigeria's published data and carries a Buy Rate, Central Rate and Sell Rate. Every displayed Rate is accompanied by its Source, its Observed At time in WAT, and a Freshness indicator that tells the reader in one word how much confidence to place in it.
 
@@ -31,13 +31,13 @@ The honesty is the product. Timestamps and Freshness are the most prominent elem
 1. As a Reader, I want to see the current Parallel Market Buy Rate and Sell Rate for a Quoted Currency, so that I know what I would actually get or pay on the street.
 2. As a Reader, I want to see the current Official Market rate for a Quoted Currency, so that I can compare the street against the institutional figure.
 3. As a Reader, I want to switch between the Parallel Market and the Official Market with one tap, so that I can see either without leaving the screen.
-4. As a Reader, I want each Rate labelled with its Source, so that I know who produced the number and that Canji did not invent it.
+4. As a Reader, I want each Rate labelled with its Source, so that I know who produced the number and that Aboki Rate did not invent it.
 5. As a Reader, I want each Rate labelled with its Observed At time, so that I can judge whether it reflects the market as it is now.
 6. As a Reader, I want Observed At shown in WAT regardless of where my phone thinks it is, so that I do not misjudge a rate's age while travelling.
 7. As a Reader, I want a one-word Freshness indicator on each Rate, so that I do not have to do date arithmetic to know whether to trust it.
 8. As a Reader, I want an Official Market Rate observed on Friday to still read as Fresh on Saturday, so that the application does not cry stale about a source that simply does not publish at weekends.
 9. As a Reader, I want a Parallel Market Rate from four days ago to read as Stale, so that I am warned before I act on it.
-10. As a Reader, I want to see the Rate Date of an Official Market Rate alongside when Canji observed it, so that I understand which trading day the figure belongs to.
+10. As a Reader, I want to see the Rate Date of an Official Market Rate alongside when Aboki Rate observed it, so that I understand which trading day the figure belongs to.
 11. As a Reader, I want new Rates to appear without pulling to refresh, so that a screen I left open does not quietly show me an old number.
 12. As a Reader, I want to pull to refresh anyway, so that I can force a check when I do not trust what I am seeing.
 13. As a Reader, I want the list of Quoted Currencies ordered with the ones I care about first, so that I am not scrolling to find the US dollar.
@@ -197,7 +197,7 @@ Two independent guards make this safe rather than reckless. Rate entry requires 
 
 ### Two timestamps
 
-Every Rate carries Observed At — when Canji recorded it — and, where the source provides one, a Rate Date, the trading day the figure belongs to according to the source. An Official Market Rate fetched on Monday may carry Friday's Rate Date. Official Market Freshness is computed from Rate Date; Observed At is what the Reader sees as "updated". All times render in Africa/Lagos, labelled WAT, irrespective of device timezone.
+Every Rate carries Observed At — when Aboki Rate recorded it — and, where the source provides one, a Rate Date, the trading day the figure belongs to according to the source. An Official Market Rate fetched on Monday may carry Friday's Rate Date. Official Market Freshness is computed from Rate Date; Observed At is what the Reader sees as "updated". All times render in Africa/Lagos, labelled WAT, irrespective of device timezone.
 
 ### Freshness
 
@@ -321,7 +321,7 @@ No prior art exists — this is a greenfield repository, and this document estab
 
 ## Out of Scope
 
-Legally out of scope, not merely deferred: peer-to-peer trading, order matching, wallets, or any facilitation of a foreign-exchange transaction; holding or transmitting funds; a cryptocurrency section; republished article text. Canji is an information service and must remain visibly one. These lines are what keep the distinction from an unlicensed dealer intact.
+Legally out of scope, not merely deferred: peer-to-peer trading, order matching, wallets, or any facilitation of a foreign-exchange transaction; holding or transmitting funds; a cryptocurrency section; republished article text. Aboki Rate is an information service and must remain visibly one. These lines are what keep the distinction from an unlicensed dealer intact.
 
 Deferred to later versions: a licensed bureau de change directory; remittance-rate comparison with referral revenue; paid alert tiers, though the alert plumbing is built to be gated later and ships free in v1. Historical rate charts were also parked here and are now shipping free — see ADR 0006; multiple Admins; per-city or regional Parallel Market rates, since v1 reports one national figure; iOS, though nothing in the architecture precludes it.
 

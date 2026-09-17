@@ -1,16 +1,16 @@
-# Canji
+# Aboki Rate
 
 Nigerian foreign-exchange rates, with their provenance and their age.
 
-Canji reports two numbers for each currency against the Naira: the **parallel market** rate, observed on the street, and the **official market** rate, published by the Central Bank of Nigeria. Every rate on screen carries where it came from, when it was observed, and a one-word judgement of how much to trust it.
+Aboki Rate reports two numbers for each currency against the Naira: the **parallel market** rate, observed on the street, and the **official market** rate, published by the Central Bank of Nigeria. Every rate on screen carries where it came from, when it was observed, and a one-word judgement of how much to trust it.
 
-The honesty is the product. Most sources show a number with no indication of when it was seen, so a reader cannot tell this morning's rate from last Tuesday's. Canji answers the question people are actually asking, which is not "what is the rate" but "can I trust this number, and how old is it".
+The honesty is the product. Most sources show a number with no indication of when it was seen, so a reader cannot tell this morning's rate from last Tuesday's. Aboki Rate answers the question people are actually asking, which is not "what is the rate" but "can I trust this number, and how old is it".
 
-Tapping a currency opens its own screen, with charts of both markets and of the gap between them, drawn from official rates going back to 2001. Parallel history begins the day Canji started observing and cannot be reconstructed — nobody was watching — so ranges widen as it accumulates rather than offering a comparison one side cannot fill.
+Tapping a currency opens its own screen, with charts of both markets and of the gap between them, drawn from official rates going back to 2001. Parallel history begins the day Aboki Rate started observing and cannot be reconstructed — nobody was watching — so ranges widen as it accumulates rather than offering a comparison one side cannot fill.
 
-## What Canji is not
+## What Aboki Rate is not
 
-Canji is an information service. It does not set, offer, quote or guarantee any rate, does not buy or sell currency, does not match buyers with sellers, and never holds money.
+Aboki Rate is an information service. It does not set, offer, quote or guarantee any rate, does not buy or sell currency, does not match buyers with sellers, and never holds money.
 
 That distinction is legally load-bearing in Nigeria, not a stylistic preference, and it shapes the product surface rather than just the terms of service. There is no trading, no wallet, no order matching and no crypto section, and none of those are "not yet" — see the out-of-scope section of the PRD.
 
@@ -37,13 +37,13 @@ Edge Functions cannot import from `src/`, so `npm run sync:functions` copies tho
 
 The full glossary is [`CONTEXT.md`](./CONTEXT.md). Four terms do the most work:
 
-**Rate** — an observation of what one unit of a currency was worth in Naira, in one market, at one moment, according to one source. Historical record, never a live price Canji offers.
+**Rate** — an observation of what one unit of a currency was worth in Naira, in one market, at one moment, according to one source. Historical record, never a live price Aboki Rate offers.
 
 **Freshness** — how much confidence to place in a rate, expressed as Fresh, Aging or Stale. Two different rules: the parallel market trades continuously so it decays in elapsed hours, while the official market publishes on weekdays only, so a Friday rate stays current all weekend rather than decaying while its source is simply closed.
 
 **Spread and Gap** — spread is the distance between buy and sell *within* one market; gap is the distance *between* markets. Separate words, because one word for two concepts breaks the moment both appear on screen.
 
-**Observed At and Rate Date** — when Canji recorded a rate, versus the trading day the source says it belongs to. An official rate fetched on Monday may carry Friday's rate date.
+**Observed At and Rate Date** — when Aboki Rate recorded a rate, versus the trading day the source says it belongs to. An official rate fetched on Monday may carry Friday's rate date.
 
 ## Decisions
 

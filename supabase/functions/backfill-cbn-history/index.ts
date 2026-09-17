@@ -9,7 +9,7 @@ import { parseUpstream, storedKey } from '../_shared/upstream-feed.ts';
  * The full-history endpoint carries every rate the Bank has published since
  * December 2001. Parallel Market history cannot be recovered at all — nobody
  * observed it — so the official series is deep and the parallel one begins on
- * the day Canji started watching. The charts handle that asymmetry by
+ * the day Aboki Rate started watching. The charts handle that asymmetry by
  * unlocking ranges only as the parallel data earns them.
  *
  * It reuses the same parser as the daily fetch on purpose. A separate import
@@ -17,7 +17,7 @@ import { parseUpstream, storedKey } from '../_shared/upstream-feed.ts';
  * which is exactly the code most likely to be subtly and silently wrong.
  *
  * Rows land with a distinct Source label so a bulk import is never mistaken
- * for a live observation, and with an honest Observed At — Canji recorded
+ * for a live observation, and with an honest Observed At — Aboki Rate recorded
  * them now, and claiming otherwise would corrupt the field this product
  * treats as sacred.
  *
@@ -68,7 +68,7 @@ Deno.serve(async (request) => {
   let payload: unknown;
   try {
     const response = await fetch(HISTORY, {
-      headers: { Accept: 'application/json', 'User-Agent': 'CanjiBot/1.0' },
+      headers: { Accept: 'application/json', 'User-Agent': 'AbokiRateBot/1.0' },
       // The full history is roughly 8 MB and the endpoint ignores every
       // pagination parameter, so this is one large request by necessity.
       signal: AbortSignal.timeout(120_000),

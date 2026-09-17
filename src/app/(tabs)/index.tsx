@@ -81,7 +81,7 @@ export default function RatesScreen() {
               accessibilityRole="header"
             >
               <Text className="text-3xl font-bold tracking-tight text-ink">
-                Canji
+                Aboki Rate
               </Text>
             </Pressable>
             <Text className="text-sm text-muted">
@@ -92,7 +92,7 @@ export default function RatesScreen() {
           <Link href="/about" asChild>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="About Canji"
+              accessibilityLabel="About Aboki Rate"
               className="rounded-full border border-line bg-surface px-3 py-1.5 active:opacity-70"
             >
               <Text className="text-xs font-semibold text-muted">About</Text>
@@ -147,7 +147,7 @@ export default function RatesScreen() {
 
         <Text className="text-xs leading-5 text-faint">
           Rates are indicative, sourced from market observation, and for
-          information only. Canji does not set, offer, or guarantee any rate.
+          information only. Aboki Rate does not set, offer, or guarantee any rate.
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -156,7 +156,7 @@ export default function RatesScreen() {
 
 /**
  * Shown when cached Rates are on screen because a refresh failed. The
- * Freshness badge already says how old each Rate is; this says why Canji has
+ * Freshness badge already says how old each Rate is; this says why Aboki Rate has
  * not managed to look for a newer one.
  */
 function OfflineNotice({ onRetry }: { onRetry: () => void }) {
@@ -164,7 +164,7 @@ function OfflineNotice({ onRetry }: { onRetry: () => void }) {
     <View className="flex-row items-center gap-3 rounded-xl border border-aging/30 bg-surface px-4 py-3">
       <View className="h-2 w-2 rounded-full bg-aging" />
       <Text className="flex-1 text-xs leading-4 text-muted">
-        Showing saved rates. Canji could not reach the network to check for
+        Showing saved rates. Aboki Rate could not reach the network to check for
         newer ones.
       </Text>
       <Pressable onPress={onRetry} className="active:opacity-70">

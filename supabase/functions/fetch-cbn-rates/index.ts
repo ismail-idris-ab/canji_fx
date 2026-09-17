@@ -175,7 +175,7 @@ Deno.serve(async (request) => {
 
 async function fetchJson(url: string): Promise<unknown> {
   const response = await fetch(url, {
-    headers: { Accept: 'application/json', 'User-Agent': 'CanjiBot/1.0' },
+    headers: { Accept: 'application/json', 'User-Agent': 'AbokiRateBot/1.0' },
     signal: AbortSignal.timeout(20_000),
   });
 

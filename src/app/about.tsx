@@ -10,7 +10,7 @@ const CBN_URL = 'https://www.cbn.gov.ng/rates/exchratebycurrency.html';
  * Two obligations meet here. The CBN's terms permit reuse of its published
  * material provided the bank is expressly credited and the content is not
  * amended or distorted — hence the attribution below and the note about
- * rounding. And Canji must read as an observer of the market rather than a
+ * rounding. And Aboki Rate must read as an observer of the market rather than a
  * participant in it, which is a legal distinction in Nigeria, not a
  * stylistic one.
  */
@@ -29,21 +29,21 @@ export default function AboutScreen() {
             <Text className="text-sm font-semibold text-accent">‹ Back</Text>
           </Pressable>
           <Text className="text-3xl font-bold tracking-tight text-ink">
-            About Canji
+            About Aboki Rate
           </Text>
         </View>
 
-        <Section title="What Canji is">
+        <Section title="What Aboki Rate is">
           <Body>
-            Canji reports exchange rates between the Naira and other
+            Aboki Rate reports exchange rates between the Naira and other
             currencies. It shows where each rate came from and when it was
             observed, so you can judge for yourself how much to rely on it.
           </Body>
         </Section>
 
-        <Section title="What Canji is not">
+        <Section title="What Aboki Rate is not">
           <Body>
-            Canji is an information service. It does not set, offer, quote or
+            Aboki Rate is an information service. It does not set, offer, quote or
             guarantee any rate, does not buy or sell currency, does not match
             buyers with sellers, and never holds your money. Every rate shown
             is an observation of what somebody else published or of what the
@@ -57,7 +57,7 @@ export default function AboutScreen() {
             <Text className="font-semibold text-ink">
               Central Bank of Nigeria
             </Text>
-            . Canji reproduces them unaltered and credits the Bank as their
+            . Aboki Rate reproduces them unaltered and credits the Bank as their
             source.
           </Body>
           <Pressable
@@ -122,7 +122,7 @@ export default function AboutScreen() {
           <Text className="text-xs leading-5 text-muted">
             Rates are indicative, sourced from market observation, and for
             information only. They are not an offer, a quotation, or financial
-            advice. Canji accepts no liability for decisions made on the basis
+            advice. Aboki Rate accepts no liability for decisions made on the basis
             of information shown here.
           </Text>
         </View>

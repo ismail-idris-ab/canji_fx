@@ -1,6 +1,6 @@
 # Rates are append-only and are never retracted
 
-A Rate is an observation, not a value, so Canji records what it saw rather than what it currently believes. A mistake is corrected by observing again; the erroneous row stays in history as a record of what Readers were actually shown. There is no update or delete policy on the rates table anywhere in the schema.
+A Rate is an observation, not a value, so Aboki Rate records what it saw rather than what it currently believes. A mistake is corrected by observing again; the erroneous row stays in history as a record of what Readers were actually shown. There is no update or delete policy on the rates table anywhere in the schema.
 
 ## Considered options
 

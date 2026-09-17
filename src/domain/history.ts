@@ -80,7 +80,7 @@ function startOfRange(range: Range, today: string): string | null {
  *
  * A range is offered only when the series that anchors the comparison spans
  * it. For a chart comparing both Markets that anchor is the parallel series,
- * which begins the day Canji started observing and cannot be reconstructed
+ * which begins the day Aboki Rate started observing and cannot be reconstructed
  * — offering "5Y" would draw one complete line and one stub, inviting the
  * reader to conclude the parallel market did not exist before then.
  *

@@ -30,7 +30,7 @@ export function RateChart({
         className="items-center justify-center rounded-2xl border border-line bg-surface p-5"
       >
         <Text className="text-center text-sm leading-5 text-muted">
-          Not enough observations yet to draw a line. Canji plots what it has
+          Not enough observations yet to draw a line. Aboki Rate plots what it has
           actually seen, so this fills in as rates are recorded.
         </Text>
       </View>
