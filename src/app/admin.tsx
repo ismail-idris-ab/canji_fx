@@ -18,6 +18,7 @@ import {
   type EntryProblem,
 } from '@/domain/rate-entry';
 import { useAdmin } from '@/hooks/use-admin';
+import { useAdminHealth } from '@/hooks/use-admin-health';
 import { useRateData } from '@/hooks/use-rate-data';
 import { formatNaira, formatObservedAt } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
@@ -145,6 +146,7 @@ function RateEntry({
 }) {
   const state = useRateData();
   const router = useRouter();
+  const health = useAdminHealth(userId);
   const now = useMemo(() => new Date(), []);
 
   const [inputs, setInputs] = useState<Record<string, Entry>>({});
@@ -340,6 +342,38 @@ function RateEntry({
         Rates cannot be edited or deleted — correct a mistake by recording a
         new observation.
       </Text>
+
+      <View className="gap-3 rounded-2xl border border-line bg-surface p-5">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-xs font-semibold uppercase tracking-widest text-faint">
+            System
+          </Text>
+          <Text className="text-[11px] text-faint">
+            {health.tokenState === 'registered'
+              ? 'alerts on'
+              : health.tokenState === 'unavailable'
+                ? 'alerts off'
+                : '…'}
+          </Text>
+        </View>
+
+        {health.events.length === 0 ? (
+          <Text className="text-xs leading-5 text-muted">
+            Nothing to report. Incidents with the rate pipeline appear here.
+          </Text>
+        ) : (
+          health.events.slice(0, 5).map((event) => (
+            <View key={event.id} className="gap-0.5">
+              <Text className="text-xs font-semibold text-aging">
+                {event.kind}
+              </Text>
+              <Text className="text-[11px] text-faint">
+                {formatObservedAt(event.createdAt, now)}
+              </Text>
+            </View>
+          ))
+        )}
+      </View>
 
       <Pressable
         onPress={() => router.push('/admin-news')}

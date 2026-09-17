@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_push_tokens: {
+        Row: {
+          expo_push_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          expo_push_token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          expo_push_token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       currencies: {
         Row: {
           code: string
@@ -158,6 +176,41 @@ export type Database = {
           is_admin?: boolean
         }
         Relationships: []
+      }
+      push_tickets: {
+        Row: {
+          alert_id: string | null
+          created_at: string
+          id: string
+          outcome: string | null
+          resolved_at: string | null
+          ticket_id: string
+        }
+        Insert: {
+          alert_id?: string | null
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          resolved_at?: string | null
+          ticket_id: string
+        }
+        Update: {
+          alert_id?: string | null
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          resolved_at?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tickets_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "rate_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_alerts: {
         Row: {
