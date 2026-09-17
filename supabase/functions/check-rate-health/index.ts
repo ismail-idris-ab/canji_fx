@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
+import { calledByScheduler, refuse } from '../_lib/cron-auth.ts';
 import { mostRecentWeekday, toLagosDate } from '../_shared/time.ts';
 
 /**
@@ -24,11 +25,13 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-Deno.serve(async () => {
+Deno.serve(async (request) => {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
+
+  if (!(await calledByScheduler(request, supabase))) return refuse();
 
   const now = new Date();
   const today = toLagosDate(now);

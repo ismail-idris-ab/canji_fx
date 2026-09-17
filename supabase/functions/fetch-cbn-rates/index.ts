@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
+import { calledByScheduler, refuse } from '../_lib/cron-auth.ts';
 import {
   latestRateDate,
   parseUpstream,
@@ -18,9 +19,10 @@ import {
  * window is used rather than the full history, which ignores every pagination
  * parameter and returns over 8 MB.
  *
- * It is safe to invoke repeatedly. Dedupe is on Quoted Currency and Rate
- * Date, so a second call on the same day inserts nothing, which is why this
- * function does not need a shared secret to protect it.
+ * Callers must present the scheduler's secret. Dedupe means a repeated call
+ * writes nothing, but idempotence bounds only what is written — a loop here
+ * would still hammer an undocumented upstream endpoint from this project's
+ * IP, which is the over-exposure ADR 0004 rejected hourly polling to avoid.
  */
 
 const PRIMARY = 'https://www.cbn.gov.ng/api/GetAllExchangeRatesGRAPH';
@@ -50,6 +52,8 @@ Deno.serve(async (request) => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
+
+  if (!(await calledByScheduler(request, supabase))) return refuse();
 
   const { data: labelRows, error: labelError } = await supabase
     .from('currency_source_labels')

@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
+import { calledByScheduler, refuse } from '../_lib/cron-auth.ts';
 import { evaluateAlerts, type Alert } from '../_shared/alert-engine.ts';
 import type { Rate } from '../_shared/types.ts';
 
@@ -37,11 +38,13 @@ function naira(value: number, market: string): string {
   })}`;
 }
 
-Deno.serve(async () => {
+Deno.serve(async (request) => {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
+
+  if (!(await calledByScheduler(request, supabase))) return refuse();
 
   const { data: alertRows, error: alertError } = await supabase
     .from('rate_alerts')
