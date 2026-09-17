@@ -1,6 +1,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 import { calledByScheduler, refuse } from '../_lib/cron-auth.ts';
+import { notifyAdmin } from '../_lib/notify-admin.ts';
 import {
   latestRateDate,
   parseUpstream,
@@ -69,25 +70,25 @@ Deno.serve(async (request) => {
   }
 
   let payload: unknown;
-  let sourceUsed: 'primary' | 'fallback' = 'primary';
 
   try {
     payload = await fetchJson(PRIMARY);
   } catch (primaryError) {
-    // The fallback reproduces the CBN's central rate but carries no spread,
-    // so it is a stopgap that keeps the official figure present rather than
-    // an equivalent source.
+    // The fallback does not stand in for the primary — it distinguishes a CBN
+    // outage from a general network failure, and alerts the Admin either way.
     try {
       const fallback = await fetchJson(FALLBACK);
-      await recordEvent(supabase, 'cbn_primary_unreachable', {
-        reason: String(primaryError),
-      });
       return await handleFallback(supabase, fallback);
     } catch (fallbackError) {
-      await recordEvent(supabase, 'cbn_all_sources_unreachable', {
-        primary: String(primaryError),
-        fallback: String(fallbackError),
-      });
+      await notifyAdmin(
+        supabase,
+        'cbn_all_sources_unreachable',
+        { primary: String(primaryError), fallback: String(fallbackError) },
+        {
+          title: 'Official rate fetch failed',
+          body: 'Neither the CBN feed nor the fallback responded. Record official rates by hand.',
+        }
+      );
       return json({ error: 'Both sources unreachable.' }, 502);
     }
   }
@@ -98,10 +99,15 @@ Deno.serve(async (request) => {
   // the failure this endpoint is most likely to produce, and it would
   // otherwise be silent.
   if (parsed.rates.length === 0) {
-    await recordEvent(supabase, 'cbn_schema_drift', {
-      unmapped: parsed.unmapped,
-      rejected: parsed.rejected.slice(0, 20),
-    });
+    await notifyAdmin(
+      supabase,
+      'cbn_schema_drift',
+      { unmapped: parsed.unmapped, rejected: parsed.rejected.slice(0, 20) },
+      {
+        title: 'CBN feed changed shape',
+        body: 'No usable rows came back. Official rates have stopped updating.',
+      }
+    );
     return json({ error: 'No usable rows. Schema may have changed.' }, 502);
   }
 
@@ -138,7 +144,7 @@ Deno.serve(async (request) => {
     return json({
       inserted: 0,
       rateDate: newest,
-      source: sourceUsed,
+      source: 'primary',
       message: 'Already up to date.',
     });
   }
@@ -162,7 +168,7 @@ Deno.serve(async (request) => {
   return json({
     inserted: toInsert.length,
     rateDate: newest,
-    source: sourceUsed,
+    source: 'primary',
     unmapped: parsed.unmapped,
   });
 });
@@ -178,30 +184,57 @@ async function fetchJson(url: string): Promise<unknown> {
 }
 
 /**
- * Frankfurter publishes only the central rate. Those rows are recorded with
- * buy and sell equal to it rather than invented, and the event log records
- * that the fallback was used.
+ * The fallback confirms an outage; it does not fill in for the primary.
+ *
+ * Frankfurter reproduces the CBN's central rate faithfully but publishes no
+ * spread. Recording a Rate with buy and sell invented around that midpoint
+ * would put a figure on screen that nobody published — the precise kind of
+ * fabrication this product exists to avoid — and a Reader could not tell it
+ * apart from an observed spread.
+ *
+ * So its job is to distinguish "the CBN is unreachable from here" from "the
+ * whole internet is unreachable from here", and to tell the Admin, who can
+ * transcribe the published figures by hand. See ADR 0004.
  */
 async function handleFallback(
   // deno-lint-ignore no-explicit-any
   supabase: any,
   payload: unknown
 ): Promise<Response> {
-  const body = payload as { date?: string; base?: string; rates?: Record<string, number> };
+  const body = payload as {
+    date?: string;
+    base?: string;
+    rates?: Record<string, number>;
+  };
+
   const rateDate = body.date;
   const ngn = body.rates?.NGN;
+  const reachable = Boolean(rateDate) && typeof ngn === 'number';
 
-  if (!rateDate || typeof ngn !== 'number' || body.base !== 'EUR') {
-    return json({ error: 'Fallback payload not in the expected shape.' }, 502);
-  }
+  const notified = await notifyAdmin(
+    supabase,
+    'cbn_primary_unreachable',
+    { fallbackReachable: reachable, fallbackRateDate: rateDate ?? null },
+    {
+      title: 'CBN feed unreachable',
+      body: reachable
+        ? 'The official rate fetch failed. Record official rates by hand until it recovers.'
+        : 'The official rate fetch failed and the fallback did not respond either.',
+    }
+  );
 
-  return json({
-    inserted: 0,
-    rateDate,
-    source: 'fallback',
-    message:
-      'Primary unreachable. Fallback reached but carries no spread; an admin should record official rates manually.',
-  });
+  return json(
+    {
+      inserted: 0,
+      source: 'fallback',
+      fallbackReachable: reachable,
+      fallbackRateDate: rateDate ?? null,
+      notified,
+      message:
+        'Primary unreachable. The fallback carries no spread, so no Rate was recorded; an admin should enter official rates by hand.',
+    },
+    502
+  );
 }
 
 // deno-lint-ignore no-explicit-any

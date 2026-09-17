@@ -128,7 +128,7 @@ The honesty is the product. Timestamps and Freshness are the most prominent elem
 74. As an Admin, I want to be notified when the upstream source changes shape, so that I learn about a break from the system rather than from a user.
 75. As an Admin, I want to be notified when no Official Market Rate has arrived for today by mid-morning on a weekday, so that a silent failure that still returns data is caught.
 76. As an Admin, I want an unrecognised currency label from the upstream source logged rather than guessed at, so that a mislabelled currency never reaches a Reader.
-77. As an Admin, I want the system to fall back to a secondary provider when the primary source is unreachable, so that an outage does not stop the official figure.
+77. As an Admin, I want to be told when the primary source is unreachable, and whether a second source can still be reached, so that I know to enter official rates by hand rather than discovering the gap later.
 78. As an Admin, I want alerts evaluated only against Rates that have settled for a few minutes, so that a typo I correct quickly never becomes a push notification.
 79. As an Admin, I want push tokens that are no longer valid to deactivate their alerts, so that the notification list does not rot.
 80. As an Admin, I want abandoned anonymous accounts cleaned up periodically, so that the user table does not grow without bound.

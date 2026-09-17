@@ -1,6 +1,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 import { calledByScheduler, refuse } from '../_lib/cron-auth.ts';
+import { notifyAdmin } from '../_lib/notify-admin.ts';
 import { mostRecentWeekday, toLagosDate } from '../_shared/time.ts';
 
 /**
@@ -16,7 +17,6 @@ import { mostRecentWeekday, toLagosDate } from '../_shared/time.ts';
  * produced a Rate bearing today's Rate Date.
  */
 
-const EXPO_SEND = 'https://exp.host/--/api/v2/push/send';
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -81,45 +81,13 @@ Deno.serve(async (request) => {
     latestStoredRateDate: latest?.rate_date ?? null,
   };
 
-  await supabase
-    .from('system_events')
-    .insert({ kind: 'official_rate_missing', detail });
+  const notified = await notifyAdmin(supabase, 'official_rate_missing', detail, {
+    title: 'Official rate missing',
+    body:
+      `No CBN rate for ${expected}. Latest stored is ` +
+      `${detail.latestStoredRateDate ?? 'none'}. ` +
+      'Check the fetch or enter it by hand.',
+  });
 
-  // Reuse the push path rather than adding an email provider for one message
-  // a year.
-  const { data: admins } = await supabase
-    .from('admin_push_tokens')
-    .select('expo_push_token');
-
-  const tokens = (admins ?? []).map((row) => row.expo_push_token);
-
-  if (tokens.length > 0) {
-    try {
-      await fetch(EXPO_SEND, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(
-          tokens.map((to) => ({
-            to,
-            title: 'Official rate missing',
-            body: `No CBN rate for ${expected}. Latest stored is ${
-              detail.latestStoredRateDate ?? 'none'
-            }. Check the fetch or enter it by hand.`,
-            data: { kind: 'official_rate_missing' },
-          }))
-        ),
-        signal: AbortSignal.timeout(20_000),
-      });
-    } catch (sendError) {
-      await supabase.from('system_events').insert({
-        kind: 'health_push_failed',
-        detail: { reason: String(sendError) },
-      });
-    }
-  }
-
-  return json({ healthy: false, ...detail, notified: tokens.length });
+  return json({ healthy: false, ...detail, notified });
 });
