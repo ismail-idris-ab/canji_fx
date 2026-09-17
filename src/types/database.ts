@@ -335,6 +335,28 @@ export type Database = {
       }
     }
     Views: {
+      daily_rates: {
+        Row: {
+          buy: number | null
+          central: number | null
+          created_at: string | null
+          currency_code: string | null
+          day: string | null
+          market: Database["public"]["Enums"]["market"] | null
+          rate_date: string | null
+          sell: number | null
+          source_label: Database["public"]["Enums"]["rate_source"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rates_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       latest_rates: {
         Row: {
           buy: number | null
@@ -361,6 +383,11 @@ export type Database = {
     Functions: {
       is_admin: { Args: never; Returns: boolean }
       purge_abandoned_anonymous_users: { Args: never; Returns: number }
+      schedule_canji_job: {
+        Args: { function_name: string; job_name: string; schedule: string }
+        Returns: undefined
+      }
+      verify_cron_secret: { Args: { presented: string }; Returns: boolean }
     }
     Enums: {
       alert_direction: "above" | "below"
@@ -369,6 +396,7 @@ export type Database = {
         | "Parallel market survey"
         | "Central Bank of Nigeria"
         | "Central Bank of Nigeria (manual entry)"
+        | "Central Bank of Nigeria (historical import)"
       watched_side: "buy" | "central" | "sell"
     }
     CompositeTypes: {
@@ -503,6 +531,7 @@ export const Constants = {
         "Parallel market survey",
         "Central Bank of Nigeria",
         "Central Bank of Nigeria (manual entry)",
+        "Central Bank of Nigeria (historical import)",
       ],
       watched_side: ["buy", "central", "sell"],
     },

@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import type { Currency, Freshness, Market, Rate } from '@/domain/types';
 import { formatNaira, formatObservedAt } from '@/lib/format';
@@ -44,15 +44,24 @@ export function CurrencyRow({
   rate,
   freshness,
   now,
+  onPress,
 }: {
   currency: Currency;
   market: Market;
   rate: Rate | null;
   freshness: Freshness | null;
   now: Date;
+  onPress?: () => void;
 }) {
   return (
-    <View className="gap-2 border-b border-line/60 px-1 py-3.5">
+    <Pressable
+      onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={
+        onPress ? `${currency.code} details and history` : undefined
+      }
+      className="gap-2 border-b border-line/60 px-1 py-3.5 active:opacity-70"
+    >
       <View className="flex-row items-center gap-3">
         <Text className="text-xl">{currency.flagEmoji}</Text>
 
@@ -105,6 +114,6 @@ export function CurrencyRow({
           </Text>
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }

@@ -138,6 +138,7 @@ export default function RatesScreen() {
                   rate={book.latest(currency.code, market)}
                   freshness={book.freshness(currency.code, market)}
                   now={now}
+                  onPress={() => router.push(`/currency/${currency.code}`)}
                 />
               ))}
             </View>

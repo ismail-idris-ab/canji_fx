@@ -27,7 +27,14 @@ export type Currency = {
 export type RateSource =
   | 'Parallel market survey'
   | 'Central Bank of Nigeria'
-  | 'Central Bank of Nigeria (manual entry)';
+  | 'Central Bank of Nigeria (manual entry)'
+  /**
+   * Bulk-imported history. Distinct from a live fetch so a Reader — or an
+   * analyst reading an export — can tell the two apart. These rows keep an
+   * honest Observed At: Canji recorded them at import time, and back-dating
+   * it would claim an observation that never happened.
+   */
+  | 'Central Bank of Nigeria (historical import)';
 
 /**
  * An observation of what one unit of a Quoted Currency was worth in Naira,
