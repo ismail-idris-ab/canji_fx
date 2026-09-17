@@ -103,6 +103,10 @@ Deno.serve(async () => {
   let sent = 0;
   const tickets: { ticket_id: string; alert_id: string }[] = [];
 
+  // Only alerts whose notification Expo actually accepted. An alert that
+  // fired but could not be delivered must not be marked as done.
+  const delivered = new Set<string>();
+
   for (let index = 0; index < messages.length; index += BATCH) {
     const chunk = messages.slice(index, index + BATCH);
     const chunkFires = fires.slice(index, index + BATCH);
@@ -125,6 +129,7 @@ Deno.serve(async () => {
       (body.data ?? []).forEach((ticket, position) => {
         if (ticket.status === 'ok' && ticket.id) {
           sent += 1;
+          delivered.add(chunkFires[position].alert.id);
           tickets.push({
             ticket_id: ticket.id,
             alert_id: chunkFires[position].alert.id,
@@ -142,9 +147,20 @@ Deno.serve(async () => {
     await supabase.from('push_tickets').insert(tickets);
   }
 
-  // Applied after sending, so a send that throws does not leave an alert
-  // marked as fired when no notification went out.
+  let abandoned = 0;
+
   for (const update of updates) {
+    // An alert that crossed but whose notification never left is skipped
+    // entirely — including its last_seen_rate. Advancing that would move the
+    // alert past its own threshold, so the same Crossing could never be
+    // detected again and the Reader would wait forever for a notification
+    // that was already thrown away. Leaving the row untouched means the next
+    // run sees the same crossing and tries again.
+    if (update.deactivate && !delivered.has(update.alertId)) {
+      abandoned += 1;
+      continue;
+    }
+
     await supabase
       .from('rate_alerts')
       .update({
@@ -155,5 +171,16 @@ Deno.serve(async () => {
       .eq('id', update.alertId);
   }
 
-  return json({ evaluated: alerts.length, fired: fires.length, sent });
+  if (abandoned > 0) {
+    await supabase
+      .from('system_events')
+      .insert({ kind: 'push_undelivered', detail: { alerts: abandoned } });
+  }
+
+  return json({
+    evaluated: alerts.length,
+    fired: fires.length,
+    sent,
+    retryNextRun: abandoned,
+  });
 });

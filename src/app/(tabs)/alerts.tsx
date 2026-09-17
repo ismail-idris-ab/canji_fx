@@ -19,6 +19,7 @@ import {
   type RateAlert,
 } from '@/hooks/use-alerts';
 import { useRateData } from '@/hooks/use-rate-data';
+import { useNow } from '@/hooks/use-now';
 import { formatNaira } from '@/lib/format';
 
 /**
@@ -31,7 +32,7 @@ import { formatNaira } from '@/lib/format';
 export default function AlertsScreen() {
   const alerts = useAlerts();
   const rateData = useRateData();
-  const now = useMemo(() => new Date(), []);
+  const now = useNow();
 
   const [market, setMarket] = useState<Market>('parallel');
   const [code, setCode] = useState('USD');

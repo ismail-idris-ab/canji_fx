@@ -10,7 +10,7 @@ type CheckState =
   | { status: 'fail'; detail: string };
 
 /**
- * Scaffold smoke screen.
+ * Scaffold smoke screen, kept as a diagnostic at /smoke.
  *
  * This exists to answer three questions before any product UI is written:
  * does NativeWind actually style components under the New Architecture, is

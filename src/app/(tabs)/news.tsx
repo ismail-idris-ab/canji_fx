@@ -30,7 +30,7 @@ export default function NewsScreen() {
         contentContainerClassName="px-5 py-6 gap-4"
         refreshControl={
           <RefreshControl
-            refreshing={false}
+            refreshing={state.status === 'loading'}
             onRefresh={() => {
               if (state.status !== 'loading') state.retry();
             }}

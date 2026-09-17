@@ -14,6 +14,7 @@ import type { Direction } from '@/domain/conversion';
 import { createRateBook } from '@/domain/rate-book';
 import type { Market } from '@/domain/types';
 import { useRateData } from '@/hooks/use-rate-data';
+import { useNow } from '@/hooks/use-now';
 import { formatNaira, formatObservedAt } from '@/lib/format';
 
 /**
@@ -30,7 +31,7 @@ export default function ConvertScreen() {
   const [input, setInput] = useState('');
 
   const state = useRateData();
-  const now = useMemo(() => new Date(), []);
+  const now = useNow();
 
   const data = state.status === 'ready' ? state.data : null;
   const book = useMemo(() => createRateBook(data?.rates ?? [], now), [data, now]);

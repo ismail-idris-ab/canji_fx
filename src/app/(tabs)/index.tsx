@@ -17,6 +17,7 @@ import { RateCard } from '@/components/rate-card';
 import { createRateBook } from '@/domain/rate-book';
 import type { Market } from '@/domain/types';
 import { useRateData } from '@/hooks/use-rate-data';
+import { useNow } from '@/hooks/use-now';
 
 /**
  * Rates screen.
@@ -29,10 +30,7 @@ export default function RatesScreen() {
   const [market, setMarket] = useState<Market>('official');
   const router = useRouter();
   const state = useRateData();
-
-  // One instant for the whole render, so no two rows can disagree about what
-  // time it is.
-  const now = useMemo(() => new Date(), []);
+  const now = useNow();
 
   const data = state.status === 'ready' ? state.data : null;
 

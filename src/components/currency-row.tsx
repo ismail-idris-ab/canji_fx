@@ -68,7 +68,7 @@ export function CurrencyRow({
       ) : (
         <Text className="max-w-[45%] text-right text-[11px] leading-4 text-faint">
           {market === 'official' && !currency.hasOfficial
-            ? 'Not published by the CBN'
+            ? 'No official market rate'
             : 'Not yet observed'}
         </Text>
       )}

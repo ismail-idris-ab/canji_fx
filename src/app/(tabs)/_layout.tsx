@@ -3,9 +3,8 @@ import type { ColorValue } from 'react-native';
 import { Text } from 'react-native';
 
 /**
- * Two tabs for now. News and Alerts arrive with their own slices, and the
- * admin area never appears here at all — it is a hidden route reached by
- * long-pressing the logo.
+ * Four reader-facing tabs. The admin area never appears here — it is a
+ * hidden route reached by long-pressing the logo on the Rates screen.
  */
 export default function TabsLayout() {
   return (

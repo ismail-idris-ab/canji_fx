@@ -20,6 +20,7 @@ import {
 import { useAdmin } from '@/hooks/use-admin';
 import { useAdminHealth } from '@/hooks/use-admin-health';
 import { useRateData } from '@/hooks/use-rate-data';
+import { useNow } from '@/hooks/use-now';
 import { formatNaira, formatObservedAt } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 
@@ -147,7 +148,7 @@ function RateEntry({
   const state = useRateData();
   const router = useRouter();
   const health = useAdminHealth(userId);
-  const now = useMemo(() => new Date(), []);
+  const now = useNow();
 
   const [inputs, setInputs] = useState<Record<string, Entry>>({});
   const [saving, setSaving] = useState(false);

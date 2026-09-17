@@ -13,7 +13,7 @@ import { formatNaira } from '@/lib/format';
  * mislead, and drawing attention to it invites a Reader to reconstruct it.
  */
 export function GapLine({ gap, code }: { gap: Gap; code: string }) {
-  const percent = (gap.fraction * 100).toFixed(1);
+  const percent = Math.abs(gap.fraction * 100).toFixed(1);
   const above = gap.naira >= 0;
 
   return (
@@ -29,7 +29,7 @@ export function GapLine({ gap, code }: { gap: Gap; code: string }) {
         </Text>
         <Text className="text-base text-muted">
           ({above ? '+' : '−'}
-          {Math.abs(Number(percent))}%)
+          {percent}%)
         </Text>
       </View>
 

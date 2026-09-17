@@ -19,7 +19,10 @@ The spec and PRD are in `docs/specs/`.
 ## Environment
 
 `app.config.ts` reads `EXPO_PUBLIC_SUPABASE_URL` and
-`EXPO_PUBLIC_SUPABASE_ANON_KEY` and throws by name if either is absent.
+`EXPO_PUBLIC_SUPABASE_ANON_KEY` and warns if either is absent. It must not
+throw: EAS evaluates the config in contexts where the values legitimately do
+not exist yet. `src/lib/env.ts` is what throws, at runtime, where a missing
+value is unambiguously real.
 
 Expo loads `.env` automatically in development. It does **not** in production
 mode, so `expo export` needs the variables exported into the shell, and EAS

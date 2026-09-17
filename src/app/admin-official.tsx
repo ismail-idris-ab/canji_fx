@@ -18,6 +18,7 @@ import {
 } from '@/domain/rate-entry';
 import { useAdmin } from '@/hooks/use-admin';
 import { useRateData } from '@/hooks/use-rate-data';
+import { useNow } from '@/hooks/use-now';
 import { formatNaira, formatRateDate } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 
@@ -36,7 +37,7 @@ export default function AdminOfficialScreen() {
   const admin = useAdmin();
   const router = useRouter();
   const state = useRateData();
-  const now = useMemo(() => new Date(), []);
+  const now = useNow();
 
   const [code, setCode] = useState('USD');
   const [buy, setBuy] = useState('');
