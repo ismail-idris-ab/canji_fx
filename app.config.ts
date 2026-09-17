@@ -88,10 +88,10 @@ const config: ExpoConfig = {
     supabaseUrl: fromEnv('EXPO_PUBLIC_SUPABASE_URL'),
     supabaseAnonKey: fromEnv('EXPO_PUBLIC_SUPABASE_ANON_KEY'),
 
-    // Created by `eas init`. A dynamic config cannot be written to by the
-    // EAS CLI, so this is set by hand. It is an identifier, not a secret.
+    // Set by `eas init`. A dynamic config cannot be written to by the EAS
+    // CLI, so this is filled in by hand. It is an identifier, not a secret.
     eas: {
-      projectId: '7673f32c-e920-4ad2-8698-c04bb41acaf2',
+      projectId: '268f0a4f-3e4e-497d-b956-68969f6bf37d',
     },
   },
 };
