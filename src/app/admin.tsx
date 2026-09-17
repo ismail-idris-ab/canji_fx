@@ -376,6 +376,15 @@ function RateEntry({
       </View>
 
       <Pressable
+        onPress={() => router.push('/admin-official')}
+        className="self-start rounded-lg bg-raised px-4 py-2 active:opacity-70"
+      >
+        <Text className="text-sm font-semibold text-accent">
+          Official rate by hand ›
+        </Text>
+      </Pressable>
+
+      <Pressable
         onPress={() => router.push('/admin-news')}
         className="self-start rounded-lg bg-raised px-4 py-2 active:opacity-70"
       >
