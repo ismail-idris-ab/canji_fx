@@ -323,7 +323,7 @@ No prior art exists — this is a greenfield repository, and this document estab
 
 Legally out of scope, not merely deferred: peer-to-peer trading, order matching, wallets, or any facilitation of a foreign-exchange transaction; holding or transmitting funds; a cryptocurrency section; republished article text. Canji is an information service and must remain visibly one. These lines are what keep the distinction from an unlicensed dealer intact.
 
-Deferred to later versions: a licensed bureau de change directory; remittance-rate comparison with referral revenue; paid alert tiers and historical rate charts, though the alert plumbing is built to be gated later and ships free in v1; multiple Admins; per-city or regional Parallel Market rates, since v1 reports one national figure; iOS, though nothing in the architecture precludes it.
+Deferred to later versions: a licensed bureau de change directory; remittance-rate comparison with referral revenue; paid alert tiers, though the alert plumbing is built to be gated later and ships free in v1. Historical rate charts were also parked here and are now shipping free — see ADR 0006; multiple Admins; per-city or regional Parallel Market rates, since v1 reports one national figure; iOS, though nothing in the architecture precludes it.
 
 Explicitly not built: a holiday calendar for Freshness; captcha on anonymous sign-in, since the IP rate limit and a periodic purge are considered sufficient and revisitable if row growth looks abusive rather than organic; retention or archival of Rate history, since volume is negligible and history is a future feature; the turnover, high and low figures available from the upstream source, which are not consumer-legible.
 

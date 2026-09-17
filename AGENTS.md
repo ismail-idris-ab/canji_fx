@@ -49,6 +49,7 @@ reader would otherwise assume the opposite:
 - `0003` Markets are named as markets, not after their publisher
 - `0004` Official Rates come from an undocumented CBN JSON endpoint
 - `0005` No second factor on the admin account in v1
+- `0006` Historical charts are free, and the revenue path moves
 
 ## Edge Functions
 

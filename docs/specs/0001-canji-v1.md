@@ -351,7 +351,7 @@ No component tests, no end-to-end tests, no snapshot tests in v1. The risk in th
 
 **Legally out of scope, not merely deferred.** No peer-to-peer trading, order matching, wallets, or any facilitation of a foreign-exchange transaction. No holding or transmission of funds. No cryptocurrency section. No republished article text. Canji is an information service and must remain visibly one; these lines are what keep the distinction from an unlicensed dealer intact.
 
-**Deferred to later versions.** A licensed bureau de change directory. Remittance-rate comparison with referral revenue. Paid alert tiers and historical rate charts — the alert plumbing is built to be gated later, but ships free and ungated in v1. Multiple Admins. Per-city or regional Parallel Market rates; v1 reports one national figure. iOS, though nothing in the architecture precludes it.
+**Deferred to later versions.** A licensed bureau de change directory. Remittance-rate comparison with referral revenue. Paid alert tiers — the alert plumbing is built to be gated later, but ships free and ungated in v1. Historical rate charts were parked here too and now ship free; see ADR 0006. Multiple Admins. Per-city or regional Parallel Market rates; v1 reports one national figure. iOS, though nothing in the architecture precludes it.
 
 **Explicitly not built.** A holiday calendar for Freshness. Captcha on anonymous sign-in — the IP rate limit and a periodic purge are considered sufficient, revisitable if row growth looks abusive rather than organic. Retention or archival of Rate history; volume is negligible and history is a future feature. NFEM turnover, high and low figures from the upstream source, which are available but not consumer-legible.
 
