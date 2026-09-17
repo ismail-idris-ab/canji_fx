@@ -45,6 +45,7 @@ reader would otherwise assume the opposite:
 - `0002` Readers are anonymous authenticated users, not device identifiers
 - `0003` Markets are named as markets, not after their publisher
 - `0004` Official Rates come from an undocumented CBN JSON endpoint
+- `0005` No second factor on the admin account in v1
 
 ## Edge Functions
 
