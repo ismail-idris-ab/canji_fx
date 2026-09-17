@@ -3,11 +3,13 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ComparisonChart } from '@/components/comparison-chart';
 import { GapLine } from '@/components/gap-line';
 import { RateCard } from '@/components/rate-card';
 import { RateChart } from '@/components/rate-chart';
 import {
   availableRanges,
+  buildGapSeries,
   buildSeries,
   changeOver,
   earliestDay,
@@ -23,9 +25,9 @@ import { formatNaira, formatRateDate } from '@/lib/format';
 /**
  * One Quoted Currency in full: its live Rate, the Gap, and its history.
  *
- * This slice shows the Official Market line only. The parallel series, the
- * Gap chart and range unlocking follow once this has proved the charting
- * library renders twenty-five years of real data under the New Architecture.
+ * Two charts, deliberately. The comparison is what people expect; the Gap over
+ * time is the one that is actually about something, and it gets equal
+ * prominence for that reason.
  */
 export default function CurrencyScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -36,7 +38,7 @@ export default function CurrencyScreen() {
   const rateData = useRateData();
   const history = useHistory(currencyCode);
 
-  const [range, setRange] = useState<Range>('90d');
+  const [range, setRange] = useState<Range>('30d');
 
   const data = rateData.status === 'ready' ? rateData.data : null;
   const book = useMemo(() => createRateBook(data?.rates ?? [], now), [data, now]);
@@ -49,32 +51,53 @@ export default function CurrencyScreen() {
     [now]
   );
 
-  // The official series anchors this slice's chart, so it decides which
-  // ranges are honest to offer. That answer differs per currency: the CBN
-  // began publishing AED in 2026 and USD in 2001.
+  const parallelDays = useMemo(
+    () => rates.filter((rate) => rate.market === 'parallel'),
+    [rates]
+  );
   const officialDays = useMemo(
     () => rates.filter((rate) => rate.market === 'official'),
     [rates]
   );
 
+  const hasParallel = parallelDays.length > 0;
+
+  // The comparison is anchored on the parallel series, which begins the day
+  // Canji started observing and cannot be reconstructed. Offering a range the
+  // parallel line cannot fill would draw one complete line and one stub,
+  // inviting the reader to conclude the street market did not exist before
+  // then. With no parallel data at all, the official series anchors instead.
   const ranges = useMemo(
-    () => availableRanges(officialDays, today),
-    [officialDays, today]
+    () => availableRanges(hasParallel ? parallelDays : officialDays, today),
+    [hasParallel, parallelDays, officialDays, today]
   );
 
   const effectiveRange = ranges.includes(range) ? range : (ranges.at(-1) ?? 'all');
 
-  const series = useMemo(
+  const parallelSeries = useMemo(
+    () => buildSeries(rates, 'parallel', effectiveRange, today),
+    [rates, effectiveRange, today]
+  );
+  const officialSeries = useMemo(
     () => buildSeries(rates, 'official', effectiveRange, today),
     [rates, effectiveRange, today]
   );
+  const gapSeries = useMemo(
+    () => buildGapSeries(rates, effectiveRange, today),
+    [rates, effectiveRange, today]
+  );
 
-  const change = changeOver(series);
-  const earliest = earliestDay(officialDays);
+  // Reported against the series a Reader is most likely reading: the street
+  // rate where it exists, the official one otherwise.
+  const change = changeOver(hasParallel ? parallelSeries : officialSeries);
 
-  const liveRate = book.latest(currencyCode, 'official');
-  const liveFreshness = book.freshness(currencyCode, 'official');
+  const liveMarket = hasParallel ? 'parallel' : 'official';
+  const liveRate = book.latest(currencyCode, liveMarket);
+  const liveFreshness = book.freshness(currencyCode, liveMarket);
   const gap = book.gap(currencyCode);
+
+  const officialEarliest = earliestDay(officialDays);
+  const parallelEarliest = earliestDay(parallelDays);
 
   return (
     <SafeAreaView className="flex-1 bg-ground">
@@ -102,7 +125,7 @@ export default function CurrencyScreen() {
             rate={liveRate}
             freshness={liveFreshness}
             now={now}
-            title="Official market"
+            title={hasParallel ? 'Parallel market' : 'Official market'}
           />
         )}
 
@@ -111,7 +134,7 @@ export default function CurrencyScreen() {
         <View className="gap-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-xs font-semibold uppercase tracking-widest text-faint">
-              Official market history
+              {hasParallel ? 'Both markets' : 'Official market history'}
             </Text>
             {change && (
               <Text
@@ -172,27 +195,63 @@ export default function CurrencyScreen() {
 
           {history.status === 'ready' && (
             <>
-              <RateChart series={series} />
+              {hasParallel ? (
+                <ComparisonChart
+                  parallel={parallelSeries}
+                  official={officialSeries}
+                />
+              ) : (
+                <RateChart series={officialSeries} />
+              )}
 
               {change && (
                 <Text className="text-xs leading-5 text-muted">
-                  {formatNaira(change.from.value ?? 0, 'official')} on{' '}
+                  {formatNaira(change.from.value ?? 0, liveMarket)} on{' '}
                   {formatRateDate(change.from.day)} →{' '}
-                  {formatNaira(change.to.value ?? 0, 'official')} on{' '}
+                  {formatNaira(change.to.value ?? 0, liveMarket)} on{' '}
                   {formatRateDate(change.to.day)}
-                </Text>
-              )}
-
-              {earliest && (
-                <Text className="text-xs leading-5 text-faint">
-                  Official rates published by the Central Bank of Nigeria since{' '}
-                  {formatRateDate(earliest)}. Days the Bank did not publish are
-                  left blank rather than filled in.
                 </Text>
               )}
             </>
           )}
         </View>
+
+        {history.status === 'ready' && gapSeries.length > 1 && (
+          <View className="gap-3">
+            <Text className="text-xs font-semibold uppercase tracking-widest text-faint">
+              Gap over time
+            </Text>
+
+            <RateChart series={gapSeries} height={160} color="#E07B39" />
+
+            <Text className="text-xs leading-5 text-muted">
+              Parallel sell minus official central, per day. Days missing
+              either side are left out entirely.
+            </Text>
+          </View>
+        )}
+
+        {history.status === 'ready' && (
+          <View className="gap-1">
+            {officialEarliest && (
+              <Text className="text-xs leading-5 text-faint">
+                Official rates published by the Central Bank of Nigeria since{' '}
+                {formatRateDate(officialEarliest)}.
+              </Text>
+            )}
+            {parallelEarliest ? (
+              <Text className="text-xs leading-5 text-faint">
+                Parallel rates observed since {formatRateDate(parallelEarliest)}
+                . Earlier street rates were never recorded, so ranges widen as
+                Canji observes more.
+              </Text>
+            ) : (
+              <Text className="text-xs leading-5 text-faint">
+                No parallel rates recorded for {currencyCode} yet.
+              </Text>
+            )}
+          </View>
+        )}
 
         <Text className="text-xs leading-5 text-faint">
           Rates are indicative, sourced from market observation, and for

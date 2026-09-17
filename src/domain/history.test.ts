@@ -6,6 +6,7 @@ import {
   buildSeries,
   changeOver,
   earliestDay,
+  sharedDomain,
   valueAsOf,
   type DailyRate,
 } from './history';
@@ -203,5 +204,47 @@ describe('earliest day', () => {
 
   it('is null when empty', () => {
     expect(earliestDay([])).toBeNull();
+  });
+});
+
+describe('a shared scale across series', () => {
+  it('spans every series given, not just the first', () => {
+    // Without this, a parallel line near ₦1,366 and an official one near
+    // ₦1,330 would each be stretched to fill the same height, and the gap
+    // between them would be whatever the renderer felt like.
+    const domain = sharedDomain([
+      [{ day: '2026-09-16', value: 1366 }],
+      [{ day: '2026-09-16', value: 1330 }],
+    ]);
+
+    expect(domain!.min).toBeLessThan(1330);
+    expect(domain!.max).toBeGreaterThan(1366);
+  });
+
+  it('pads so a line never sits on the edge', () => {
+    const domain = sharedDomain([
+      [
+        { day: '2026-09-15', value: 100 },
+        { day: '2026-09-16', value: 200 },
+      ],
+    ]);
+
+    expect(domain!.min).toBeLessThan(100);
+    expect(domain!.max).toBeGreaterThan(200);
+  });
+
+  it('gives a flat series room to draw', () => {
+    const domain = sharedDomain([
+      [
+        { day: '2026-09-15', value: 1330 },
+        { day: '2026-09-16', value: 1330 },
+      ],
+    ]);
+
+    expect(domain!.max).toBeGreaterThan(domain!.min);
+  });
+
+  it('is null when there is nothing to draw', () => {
+    expect(sharedDomain([[], []])).toBeNull();
   });
 });

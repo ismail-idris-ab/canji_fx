@@ -204,3 +204,43 @@ export function valueAsOf(
 
   return found;
 }
+
+/** The value range a chart should draw, across every series it shows. */
+export type Domain = { min: number; max: number };
+
+/**
+ * One shared scale for several series.
+ *
+ * Charting libraries normally derive a scale per series. For a comparison
+ * that is actively misleading: a parallel line around ₦1,366 and an official
+ * one around ₦1,330 would each be stretched to fill the same height, so the
+ * gap between them would look like whatever the renderer chose, and the lines
+ * could even appear to cross. Both must be measured against the same axis or
+ * the picture is a lie.
+ *
+ * A little padding is added so a line never runs along the very edge, and a
+ * flat series still draws a line rather than collapsing to zero height.
+ */
+export function sharedDomain(
+  serieses: readonly (readonly SeriesPoint[])[]
+): Domain | null {
+  const values = serieses
+    .flat()
+    .map((point) => point.value)
+    .filter((value): value is number => value !== null);
+
+  if (values.length === 0) return null;
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  if (min === max) {
+    // A single distinct value: give it room so it renders as a flat line
+    // rather than a degenerate scale.
+    const padding = Math.abs(min) * 0.01 || 1;
+    return { min: min - padding, max: max + padding };
+  }
+
+  const padding = (max - min) * 0.08;
+  return { min: min - padding, max: max + padding };
+}
