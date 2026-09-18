@@ -28,6 +28,7 @@ Three pure domain modules carry everything that can be wrong about a number. The
 | `src/domain/upstream-feed.ts` | Parsing the CBN payload, label mapping, dedupe |
 | `src/domain/alert-engine.ts` | Which rate alerts have been crossed and should fire |
 | `src/domain/history.ts` | Chart series, range availability, the gap over time, change |
+| `src/domain/rss.ts` | Reading feeds, capping excerpts, relevance, grouping |
 
 Everything else is a thin shell: hooks fetch and hand raw rows to a domain module, screens lay out what it returns, Edge Functions perform I/O and delegate every decision.
 
@@ -55,6 +56,7 @@ The full glossary is [`CONTEXT.md`](./CONTEXT.md). Four terms do the most work:
 - [0004](./docs/adr/0004-depending-on-an-undocumented-cbn-endpoint.md) — official rates come from an undocumented CBN JSON endpoint
 - [0005](./docs/adr/0005-no-mfa-on-the-admin-account-for-v1.md) — no second factor on the admin account in v1
 - [0006](./docs/adr/0006-historical-charts-are-free.md) — historical charts are free, and the revenue path moves
+- [0007](./docs/adr/0007-storing-short-excerpts-from-feeds.md) — short excerpts from publisher feeds are stored
 
 The specification and PRD are in [`docs/specs/`](./docs/specs/).
 

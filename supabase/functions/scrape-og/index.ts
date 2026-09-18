@@ -52,14 +52,24 @@ function meta(html: string, key: string): string | null {
 }
 
 function decode(value: string): string {
+  // Numeric entities are handled generally, not by a list of the ones
+  // somebody noticed. Nigerian publishers emit &#8217; for a curly
+  // apostrophe constantly, and a headline showing the raw entity looks
+  // broken in a product whose claim is care with detail.
   return value
-    .replace(/&amp;/g, '&')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
+      String.fromCodePoint(Number.parseInt(hex, 16))
+    )
+    .replace(/&#(\d+);/g, (_, digits) =>
+      String.fromCodePoint(Number.parseInt(digits, 10))
+    )
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
-    .replace(/&#0?39;/g, "'")
     .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&nbsp;/g, ' ')
+    // Ampersand last, so an already-decoded entity is not decoded twice.
+    .replace(/&amp;/g, '&');
 }
 
 /** Strips a leading www. so sub-domain variants resolve to one publisher. */

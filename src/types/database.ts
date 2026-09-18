@@ -95,40 +95,53 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          excerpt: string | null
+          feed_domain: string | null
           id: string
           image_url: string | null
-          is_active: boolean
           published_at: string | null
           sort_order: number
           source_domain: string
+          status: Database["public"]["Enums"]["news_status"]
           title: string
           url: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          excerpt?: string | null
+          feed_domain?: string | null
           id?: string
           image_url?: string | null
-          is_active?: boolean
           published_at?: string | null
           sort_order?: number
           source_domain: string
+          status?: Database["public"]["Enums"]["news_status"]
           title: string
           url: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          excerpt?: string | null
+          feed_domain?: string | null
           id?: string
           image_url?: string | null
-          is_active?: boolean
           published_at?: string | null
           sort_order?: number
           source_domain?: string
+          status?: Database["public"]["Enums"]["news_status"]
           title?: string
           url?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "news_items_feed_domain_fkey"
+            columns: ["feed_domain"]
+            isOneToOne: false
+            referencedRelation: "news_sources"
+            referencedColumns: ["domain"]
+          },
           {
             foreignKeyName: "news_items_source_domain_fkey"
             columns: ["source_domain"]
@@ -144,18 +157,21 @@ export type Database = {
           domain: string
           is_active: boolean
           name: string
+          rss_url: string | null
         }
         Insert: {
           created_at?: string
           domain: string
           is_active?: boolean
           name: string
+          rss_url?: string | null
         }
         Update: {
           created_at?: string
           domain?: string
           is_active?: boolean
           name?: string
+          rss_url?: string | null
         }
         Relationships: []
       }
@@ -392,6 +408,7 @@ export type Database = {
     Enums: {
       alert_direction: "above" | "below"
       market: "parallel" | "official"
+      news_status: "pending" | "published" | "rejected"
       rate_source:
         | "Parallel market survey"
         | "Central Bank of Nigeria"
@@ -527,6 +544,7 @@ export const Constants = {
     Enums: {
       alert_direction: ["above", "below"],
       market: ["parallel", "official"],
+      news_status: ["pending", "published", "rejected"],
       rate_source: [
         "Parallel market survey",
         "Central Bank of Nigeria",

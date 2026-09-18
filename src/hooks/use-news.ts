@@ -6,6 +6,7 @@ export type NewsItem = {
   id: string;
   title: string;
   url: string;
+  excerpt: string | null;
   imageUrl: string | null;
   publishedAt: Date | null;
   sourceDomain: string;
@@ -30,9 +31,9 @@ export function useNews(): NewsState {
     const { data, error } = await supabase
       .from('news_items')
       .select(
-        'id, title, url, image_url, published_at, source_domain, news_sources(name)'
+        'id, title, url, excerpt, image_url, published_at, source_domain, news_sources!source_domain(name)'
       )
-      .eq('is_active', true)
+      .eq('status', 'published')
       .order('sort_order')
       .order('published_at', { ascending: false, nullsFirst: false });
 
@@ -52,6 +53,7 @@ export function useNews(): NewsState {
         id: row.id,
         title: row.title,
         url: row.url,
+        excerpt: row.excerpt,
         imageUrl: row.image_url,
         publishedAt: row.published_at ? new Date(row.published_at) : null,
         sourceDomain: row.source_domain,

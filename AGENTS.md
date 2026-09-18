@@ -50,6 +50,7 @@ reader would otherwise assume the opposite:
 - `0004` Official Rates come from an undocumented CBN JSON endpoint
 - `0005` No second factor on the admin account in v1
 - `0006` Historical charts are free, and the revenue path moves
+- `0007` Short excerpts from publisher feeds are stored
 
 ## Edge Functions
 
@@ -70,6 +71,7 @@ flag avoids needing Docker.
 | `check-alerts` | every 15 min | Fires Rate Alerts on a Crossing |
 | `check-push-receipts` | :07 :22 :37 :52 | Retires dead push tokens |
 | `check-rate-health` | 09:05 Mon–Fri | Notices a silently stalled fetch |
+| `fetch-news` | every 6 hours | Polls publisher feeds into the approval queue |
 | `purge-anonymous-users` | Sun 02:00 | Removes abandoned Readers |
 
 All four HTTP-invoked functions refuse any caller not presenting an

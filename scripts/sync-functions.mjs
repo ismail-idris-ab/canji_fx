@@ -8,7 +8,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
  * copy running in production drift from the copy that has tests. The source
  * of truth is always src/domain.
  */
-const MODULES = ['upstream-feed', 'alert-engine', 'types', 'time'];
+const MODULES = ['upstream-feed', 'alert-engine', 'types', 'time', 'rss'];
 
 mkdirSync('supabase/functions/_shared', { recursive: true });
 
