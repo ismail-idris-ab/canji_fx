@@ -77,6 +77,80 @@ function decodeEntities(value: string): string {
     .replace(/&amp;/g, '&');
 }
 
+/**
+ * Splits a block on double line breaks.
+ *
+ * Several Nigerian publishers separate paragraphs with <br><br> inside one
+ * <p> rather than with separate elements. Stripping tags first collapses an
+ * entire story into a single wall of text — one ThisDay article came back as
+ * six paragraphs, one of them 370 words.
+ */
+function splitOnBreaks(html: string): string[] {
+  // A run of two or more breaks is always a paragraph boundary, so those are
+  // split first and never rejoined.
+  const hardParts = html
+    .split(/(?:<br\s*\/?>\s*){2,}/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const paragraphs: string[] = [];
+
+  for (const hardPart of hardParts) {
+    // A single break is ambiguous. ThisDay separates every paragraph with
+    // one <br>, while other publishers use it to wrap a line mid-sentence.
+    // Terminal punctuation tells them apart: a wrapped line does not end in
+    // a full stop.
+    const fragments = hardPart
+      .split(/<br\s*\/?>/i)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    let current = '';
+
+    for (const fragment of fragments) {
+      if (!current) {
+        current = fragment;
+        continue;
+      }
+
+      const plain = current.replace(/<[^>]+>/g, ' ').trim();
+
+      if (/[.!?”"']$/.test(plain)) {
+        paragraphs.push(current);
+        current = fragment;
+      } else {
+        current = `${current} ${fragment}`;
+      }
+    }
+
+    if (current) paragraphs.push(current);
+  }
+
+  return paragraphs;
+}
+
+/**
+ * A paragraph that is entirely bold and short is a subheading the publisher
+ * marked with <strong> instead of <h2>. Both ThisDay articles examined had
+ * no <h2> at all, which is why the reading view had no structure.
+ */
+function isPseudoHeading(inner: string, content: string): boolean {
+  const withoutBold = inner.replace(/<\/?(?:strong|b)(?:\s[^>]*)?>/gi, '');
+  const bare = withoutBold.replace(/<[^>]+>/g, '').trim();
+
+  const wasBold = /<(?:strong|b)(?:\s[^>]*)?>/i.test(inner);
+  const words = content.split(' ').length;
+
+  // Bold, the whole block, short, and not a sentence.
+  return (
+    wasBold &&
+    bare.length > 0 &&
+    words >= 2 &&
+    words <= 12 &&
+    !/[.!?]$/.test(content)
+  );
+}
+
 function text(html: string): string {
   return decodeEntities(html.replace(/<[^>]+>/g, ' '))
     .replace(/\s+/g, ' ')
@@ -148,6 +222,11 @@ export function extractArticle(html: string): Extraction {
       continue;
     }
 
+    if (tag === 'p' && isPseudoHeading(match[2], content)) {
+      blocks.push({ type: 'heading', text: content });
+      continue;
+    }
+
     if (tag === 'li') {
       // A navigation or date rail survives the noise filter surprisingly
       // often. Real list items in an article are sentences, not section
@@ -158,10 +237,15 @@ export function extractArticle(html: string): Extraction {
       continue;
     }
 
-    // Very short paragraphs are captions, bylines and share prompts far more
-    // often than they are reporting.
-    if (content.split(' ').length >= 6) {
-      blocks.push({ type: 'paragraph', text: content });
+    // One <p> can hold several paragraphs separated by line breaks.
+    for (const part of splitOnBreaks(match[2])) {
+      const paragraph = text(part);
+
+      // Very short paragraphs are captions, bylines and share prompts far
+      // more often than they are reporting.
+      if (paragraph && paragraph.split(' ').length >= 6) {
+        blocks.push({ type: 'paragraph', text: paragraph });
+      }
     }
   }
 

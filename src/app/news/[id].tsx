@@ -1,5 +1,5 @@
-import * as WebBrowser from 'expo-web-browser';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
@@ -11,27 +11,32 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { Block } from '@/domain/article';
 import { useArticle } from '@/hooks/use-article';
 import { useNews } from '@/hooks/use-news';
 import { useNow } from '@/hooks/use-now';
 import { formatRelative } from '@/lib/format';
+import { useAppFonts } from '@/lib/fonts';
 
 /**
  * A story, read inside the app.
  *
- * The publisher's name appears under the headline, again at the foot, and on
- * a button that opens their own page. Aboki Rate renders their reporting in
- * its own typography with none of their advertising, so whose work it is must
- * be impossible to miss — that is the difference between attribution and
- * appropriation, and it costs a few lines of text.
+ * The one screen that leaves the app's dark palette behind. Amber on
+ * near-black is right for scanning rates and punishing for a thousand words
+ * of prose, so an article gets its own ground — pale ledger stock, the paper
+ * this subject actually lives on. The chrome stays dark, so it still reads as
+ * Aboki Rate rather than a different application.
  *
- * Sharing sends the publisher's URL, never a link to this screen. Anyone
- * receiving it lands on them.
+ * The publisher is named under the headline, again at the foot, and on a
+ * button to their site. Their reporting is set in our typography with none of
+ * their advertising, so whose work it is must be impossible to miss. See
+ * ADR 0008.
  */
 export default function ArticleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const now = useNow();
+  const fontsLoaded = useAppFonts();
 
   const article = useArticle(id);
   const news = useNews();
@@ -44,9 +49,10 @@ export default function ArticleScreen() {
     [news, id]
   );
 
-  const url = article.status === 'ready' || article.status === 'unreadable'
-    ? article.url
-    : item?.url;
+  const url =
+    article.status === 'ready' || article.status === 'unreadable'
+      ? article.url
+      : item?.url;
 
   const sourceName =
     (article.status === 'ready' ? article.sourceName : undefined) ??
@@ -67,7 +73,8 @@ export default function ArticleScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-ground">
-      <View className="flex-row items-center justify-between border-b border-line px-5 py-3">
+      {/* Chrome stays dark: the reader is still inside Aboki Rate. */}
+      <View className="flex-row items-center justify-between px-5 py-3">
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"
@@ -89,120 +96,160 @@ export default function ArticleScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerClassName="px-5 py-6 gap-5">
-        {item && (
-          <View className="gap-2">
-            <Text className="text-2xl font-bold leading-8 text-ink">
-              {item.title}
-            </Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-xs font-semibold uppercase tracking-wide text-accent">
-                {sourceName}
-              </Text>
-              {item.publishedAt && (
-                <>
-                  <Text className="text-xs text-faint">·</Text>
-                  <Text className="text-xs text-faint">
-                    {formatRelative(item.publishedAt, now)}
-                  </Text>
-                </>
-              )}
-            </View>
-          </View>
-        )}
-
-        {article.status === 'loading' && (
-          <View className="items-center gap-3 p-8">
-            <ActivityIndicator color="#F5B301" />
-            <Text className="text-sm text-muted">Fetching the story…</Text>
-          </View>
-        )}
-
-        {article.status === 'error' && (
-          <View className="gap-3 rounded-2xl border border-stale/40 bg-surface p-5">
-            <Text className="text-xs leading-5 text-muted">
-              {article.message}
-            </Text>
-            <Pressable onPress={article.retry} className="active:opacity-70">
-              <Text className="text-sm font-semibold text-accent">
-                Try again
-              </Text>
-            </Pressable>
-          </View>
-        )}
-
-        {article.status === 'unreadable' && (
-          <View className="gap-3 rounded-2xl border border-line bg-surface p-5">
-            <Text className="text-sm leading-6 text-muted">
-              This story could not be shown here, so it opened on{' '}
-              {sourceName || 'the publisher’s site'} instead.
-            </Text>
-            <Pressable
-              onPress={() => void WebBrowser.openBrowserAsync(article.url)}
-              className="self-start rounded-lg bg-raised px-4 py-2 active:opacity-70"
-            >
-              <Text className="text-sm font-semibold text-accent">
-                Open it again
-              </Text>
-            </Pressable>
-          </View>
-        )}
-
-        {article.status === 'ready' && (
-          <>
+      <ScrollView className="flex-1 bg-paper" contentContainerClassName="pb-16">
+        <View className="gap-5 px-6 pt-8">
+          {item && (
             <View className="gap-4">
-              {article.blocks.map((block, index) => {
-                if (block.type === 'heading') {
-                  return (
-                    <Text
-                      key={index}
-                      className="pt-2 text-lg font-bold leading-7 text-ink"
-                    >
-                      {block.text}
-                    </Text>
-                  );
-                }
-
-                if (block.type === 'listItem') {
-                  return (
-                    <View key={index} className="flex-row gap-3 pl-1">
-                      <Text className="text-base leading-7 text-muted">•</Text>
-                      <Text className="flex-1 text-base leading-7 text-muted">
-                        {block.text}
-                      </Text>
-                    </View>
-                  );
-                }
-
-                return (
-                  <Text
-                    key={index}
-                    className="text-base leading-7 text-muted"
-                  >
-                    {block.text}
-                  </Text>
-                );
-              })}
-            </View>
-
-            <View className="gap-3 border-t border-line pt-5">
-              <Text className="text-xs leading-5 text-faint">
-                This story was written and published by {sourceName}. Aboki
-                Rate shows it here for convenience; the reporting is theirs.
+              <Text
+                className={`text-[30px] leading-[38px] text-paper-ink ${
+                  fontsLoaded ? 'font-display' : 'font-bold'
+                }`}
+              >
+                {item.title}
               </Text>
 
-              <Pressable
-                onPress={() => void WebBrowser.openBrowserAsync(article.url)}
-                className="rounded-xl bg-raised px-4 py-3 active:opacity-70"
-              >
-                <Text className="text-center text-sm font-semibold text-accent">
-                  Read on {sourceName}
+              <View className="flex-row items-center gap-2">
+                <Text className="text-[11px] font-bold uppercase tracking-[1.5px] text-paper-mark">
+                  {sourceName}
+                </Text>
+                {item.publishedAt && (
+                  <>
+                    <Text className="text-[11px] text-paper-soft">·</Text>
+                    <Text className="text-[11px] text-paper-soft">
+                      {formatRelative(item.publishedAt, now)}
+                    </Text>
+                  </>
+                )}
+              </View>
+
+              <View className="h-px bg-paper-rule" />
+            </View>
+          )}
+
+          {article.status === 'loading' && (
+            <View className="items-center gap-3 py-16">
+              <ActivityIndicator color="#8A5A00" />
+              <Text className="text-sm text-paper-soft">
+                Fetching the story…
+              </Text>
+            </View>
+          )}
+
+          {article.status === 'error' && (
+            <View className="gap-3 py-8">
+              <Text className="text-sm leading-6 text-paper-soft">
+                {article.message}
+              </Text>
+              <Pressable onPress={article.retry} className="active:opacity-70">
+                <Text className="text-sm font-semibold text-paper-mark">
+                  Try again
                 </Text>
               </Pressable>
             </View>
-          </>
-        )}
+          )}
+
+          {article.status === 'unreadable' && (
+            <View className="gap-3 py-8">
+              <Text className="text-base leading-7 text-paper-soft">
+                This story could not be laid out here, so it opened on{' '}
+                {sourceName || 'the publisher’s site'} instead.
+              </Text>
+              <Pressable
+                onPress={() => void WebBrowser.openBrowserAsync(article.url)}
+                className="self-start rounded-lg border border-paper-rule px-4 py-2 active:opacity-70"
+              >
+                <Text className="text-sm font-semibold text-paper-mark">
+                  Open it again
+                </Text>
+              </Pressable>
+            </View>
+          )}
+
+          {article.status === 'ready' && (
+            <>
+              <View className="gap-5 pt-1">
+                {article.blocks.map((block, index) => (
+                  <ArticleBlock
+                    key={index}
+                    block={block}
+                    isLede={index === 0 && block.type === 'paragraph'}
+                    fontsLoaded={fontsLoaded}
+                  />
+                ))}
+              </View>
+
+              <View className="mt-10 gap-4 border-t border-paper-rule pt-6">
+                <Text className="text-[13px] leading-6 text-paper-soft">
+                  Written and published by {sourceName}. Aboki Rate selects and
+                  displays it; the reporting is theirs.
+                </Text>
+
+                <Pressable
+                  onPress={() => void WebBrowser.openBrowserAsync(article.url)}
+                  className="rounded-xl border border-paper-mark/30 px-4 py-3 active:opacity-70"
+                >
+                  <Text className="text-center text-sm font-bold text-paper-mark">
+                    Read on {sourceName}
+                  </Text>
+                </Pressable>
+              </View>
+            </>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/**
+ * The opening paragraph is set larger than the rest — an editorial lede,
+ * which gives a wall of even paragraphs somewhere to start.
+ */
+function ArticleBlock({
+  block,
+  isLede,
+  fontsLoaded,
+}: {
+  block: Block;
+  isLede: boolean;
+  fontsLoaded: boolean;
+}) {
+  const body = fontsLoaded ? 'font-read' : '';
+
+  if (block.type === 'heading') {
+    return (
+      <Text
+        className={`pt-4 text-[19px] leading-7 text-paper-ink ${
+          fontsLoaded ? 'font-display' : 'font-bold'
+        }`}
+      >
+        {block.text}
+      </Text>
+    );
+  }
+
+  if (block.type === 'listItem') {
+    return (
+      <View className="flex-row gap-3 pl-1">
+        <Text className={`text-[17px] leading-[30px] text-paper-mark ${body}`}>
+          —
+        </Text>
+        <Text
+          className={`flex-1 text-[17px] leading-[30px] text-paper-ink ${body}`}
+        >
+          {block.text}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <Text
+      className={`text-paper-ink ${body} ${
+        isLede ? 'text-[20px] leading-[33px]' : 'text-[17px] leading-[30px]'
+      }`}
+    >
+      {block.text}
+    </Text>
   );
 }
