@@ -51,6 +51,7 @@ reader would otherwise assume the opposite:
 - `0005` No second factor on the admin account in v1
 - `0006` Historical charts are free, and the revenue path moves
 - `0007` Short excerpts from publisher feeds are stored
+- `0008` Articles are rendered inside the app
 
 ## Edge Functions
 

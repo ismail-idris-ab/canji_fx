@@ -76,3 +76,29 @@ export function formatNaira(value: number, market: Market): string {
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return `₦${grouped}${fraction ? `.${fraction}` : ''}`;
 }
+
+/**
+ * Relative time, for news only.
+ *
+ * Rates carry an absolute WAT timestamp because acting on a stale one costs
+ * money and "3 hours ago" hides which trading session it belongs to. A news
+ * story is different: recency is the whole of what a Reader needs, and a
+ * clock time would be noise. Two kinds of data, two rules.
+ */
+export function formatRelative(instant: Date, now: Date): string {
+  const seconds = Math.max(0, (now.getTime() - instant.getTime()) / 1000);
+
+  if (seconds < 60) return 'just now';
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+
+  // Beyond a week, a date is more use than a count of days.
+  return formatWatDay(instant);
+}

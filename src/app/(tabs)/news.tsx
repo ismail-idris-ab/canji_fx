@@ -1,8 +1,6 @@
-import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -11,23 +9,26 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useNews, type NewsItem } from '@/hooks/use-news';
-import { formatWatDay } from '@/lib/format';
+import { NewsCard } from '@/components/news-card';
+import { useNews } from '@/hooks/use-news';
+import { useNow } from '@/hooks/use-now';
 
 /**
  * News list.
  *
- * Each card is a pointer to somebody else's article. Tapping opens the
- * original in the system browser so the publisher gets the visit; Aboki Rate
- * never renders their text.
+ * Stories are gathered from publisher feeds and chosen by hand, so the list
+ * stays short and relevant rather than becoming a wire feed. Tapping opens
+ * the story inside the app, always crediting the outlet that reported it.
  */
 export default function NewsScreen() {
   const state = useNews();
+  const router = useRouter();
+  const now = useNow();
 
   return (
     <SafeAreaView className="flex-1 bg-ground">
       <ScrollView
-        contentContainerClassName="px-5 py-6 gap-4"
+        contentContainerClassName="px-5 py-6 gap-3"
         refreshControl={
           <RefreshControl
             refreshing={state.status === 'loading'}
@@ -40,7 +41,7 @@ export default function NewsScreen() {
           />
         }
       >
-        <View className="gap-1">
+        <View className="gap-1 pb-2">
           <Text className="text-3xl font-bold tracking-tight text-ink">
             News
           </Text>
@@ -77,67 +78,27 @@ export default function NewsScreen() {
         {state.status === 'ready' && state.items.length === 0 && (
           <View className="gap-2 rounded-2xl border border-line bg-surface p-5">
             <Text className="text-sm leading-5 text-muted">
-              No stories yet. Headlines are chosen by hand rather than pulled
-              in automatically, so this stays short and relevant.
+              No stories yet. Headlines are gathered from Nigerian publishers
+              and chosen by hand, so this stays short and relevant.
             </Text>
           </View>
         )}
 
         {state.status === 'ready' &&
-          state.items.map((item) => <NewsCard key={item.id} item={item} />)}
+          state.items.map((item) => (
+            <NewsCard
+              key={item.id}
+              item={item}
+              now={now}
+              onPress={() => router.push(`/news/${item.id}`)}
+            />
+          ))}
 
-        <Text className="text-xs leading-5 text-faint">
-          Headlines and images belong to their publishers. Aboki Rate links to the
-          original and stores no article text.
+        <Text className="pt-2 text-xs leading-5 text-faint">
+          Every story is written and published by the outlet named on it. Aboki
+          Rate selects and links; the reporting is theirs.
         </Text>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function NewsCard({ item }: { item: NewsItem }) {
-  // Images are hot-linked rather than re-hosted, which keeps Aboki Rate an index
-  // rather than a copy. Hot-linking can fail, so the card must survive it.
-  const [imageFailed, setImageFailed] = useState(false);
-  const showImage = Boolean(item.imageUrl) && !imageFailed;
-
-  return (
-    <Pressable
-      onPress={() => void Linking.openURL(item.url)}
-      accessibilityRole="link"
-      accessibilityLabel={`${item.title}, ${item.sourceName}. Opens in your browser.`}
-      className="overflow-hidden rounded-2xl border border-line bg-surface active:opacity-70"
-    >
-      {showImage && (
-        <Image
-          source={{ uri: item.imageUrl! }}
-          style={{ width: '100%', height: 160 }}
-          contentFit="cover"
-          transition={150}
-          onError={() => setImageFailed(true)}
-        />
-      )}
-
-      <View className="gap-2 p-4">
-        <Text className="text-base font-semibold leading-6 text-ink">
-          {item.title}
-        </Text>
-
-        <View className="flex-row items-center gap-2">
-          <Text className="text-xs font-semibold text-accent">
-            {item.sourceName}
-          </Text>
-          {item.publishedAt && (
-            <>
-              <Text className="text-xs text-faint">·</Text>
-              <Text className="text-xs text-faint">
-                {formatWatDay(item.publishedAt)}
-              </Text>
-            </>
-          )}
-          <Text className="text-xs text-faint">· Opens in browser</Text>
-        </View>
-      </View>
-    </Pressable>
   );
 }
